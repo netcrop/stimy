@@ -1,0 +1,1049 @@
+       0    6        main 0
+       1    6        !setlocale (LC_CTYPE, "") || !XSupportsLocale ()
+       2    6        !(dpy = XOpenDisplay (NULL))
+       3    6        !embed || !(parentwin = strtol (embed, NULL, 0))
+       4    6        !XGetWindowAttributes (dpy, parentwin, &wa)
+       5    8          drw_create 0
+       6   10            ecalloc 0
+       7   10            !(p = calloc (nmemb, size))
+       8   10            ecalloc 1
+       9    8          XSetLineAttributes (dpy, drw->gc, 1, LineSolid, CapButt, JoinMiter);
+      10    8          drw_create 1
+      11    6        !drw_fontset_create (drw, fonts, LENGTH (fonts))
+      12    8          drw_fontset_create 0
+      13    8          !drw || !fonts
+      14    8          (cur = xfont_create (drw, fonts[fontcount - i], NULL))
+      15   10            xfont_create 0
+      16   10            fontname
+      17   10            !(xfont = XftFontOpenName (drw->dpy, drw->screen, fontname))
+      18   10            !(pattern = FcNameParse ((FcChar8 *) fontname))
+      19   10            FcPatternGetBool (xfont->pattern, FC_COLOR, 0, &iscol) == FcResultMatch && iscol
+      20   12              ecalloc 0
+      21   12              !(p = calloc (nmemb, size))
+      22   12              ecalloc 1
+      23   10            xfont_create 1
+      24    8          drw_fontset_create 1
+      25    6        fast && !isatty (0)
+      26    6        readstdin ();
+      27    8          readstdin 0
+      28    8          items
+      29    8          readstdin 1
+      30    6        grabkeyboard ();
+      31    8          grabkeyboard 0
+      32    8          embed
+      33    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+      34    8          nanosleep (&ts, NULL);
+      35    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+      36    8          nanosleep (&ts, NULL);
+      37    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+      38    8          nanosleep (&ts, NULL);
+      39    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+      40    8          nanosleep (&ts, NULL);
+      41    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+      42    8          nanosleep (&ts, NULL);
+      43    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+      44    8          nanosleep (&ts, NULL);
+      45    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+      46    8          nanosleep (&ts, NULL);
+      47    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+      48    8          nanosleep (&ts, NULL);
+      49    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+      50    8          nanosleep (&ts, NULL);
+      51    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+      52    8          nanosleep (&ts, NULL);
+      53    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+      54    8          nanosleep (&ts, NULL);
+      55    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+      56    8          nanosleep (&ts, NULL);
+      57    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+      58    8          nanosleep (&ts, NULL);
+      59    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+      60    8          nanosleep (&ts, NULL);
+      61    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+      62    8          nanosleep (&ts, NULL);
+      63    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+      64    8          nanosleep (&ts, NULL);
+      65    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+      66    8          nanosleep (&ts, NULL);
+      67    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+      68    8          nanosleep (&ts, NULL);
+      69    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+      70    8          nanosleep (&ts, NULL);
+      71    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+      72    8          nanosleep (&ts, NULL);
+      73    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+      74    8          nanosleep (&ts, NULL);
+      75    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+      76    8          nanosleep (&ts, NULL);
+      77    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+      78    8          nanosleep (&ts, NULL);
+      79    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+      80    8          nanosleep (&ts, NULL);
+      81    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+      82    8          nanosleep (&ts, NULL);
+      83    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+      84    8          nanosleep (&ts, NULL);
+      85    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+      86    8          nanosleep (&ts, NULL);
+      87    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+      88    8          nanosleep (&ts, NULL);
+      89    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+      90    8          nanosleep (&ts, NULL);
+      91    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+      92    8          nanosleep (&ts, NULL);
+      93    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+      94    8          nanosleep (&ts, NULL);
+      95    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+      96    8          nanosleep (&ts, NULL);
+      97    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+      98    8          nanosleep (&ts, NULL);
+      99    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     100    8          nanosleep (&ts, NULL);
+     101    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     102    8          nanosleep (&ts, NULL);
+     103    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     104    8          nanosleep (&ts, NULL);
+     105    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     106    8          nanosleep (&ts, NULL);
+     107    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     108    8          nanosleep (&ts, NULL);
+     109    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     110    8          nanosleep (&ts, NULL);
+     111    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     112    8          nanosleep (&ts, NULL);
+     113    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     114    8          nanosleep (&ts, NULL);
+     115    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     116    8          nanosleep (&ts, NULL);
+     117    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     118    8          nanosleep (&ts, NULL);
+     119    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     120    8          nanosleep (&ts, NULL);
+     121    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     122    8          nanosleep (&ts, NULL);
+     123    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     124    8          nanosleep (&ts, NULL);
+     125    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     126    8          nanosleep (&ts, NULL);
+     127    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     128    8          nanosleep (&ts, NULL);
+     129    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     130    8          nanosleep (&ts, NULL);
+     131    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     132    8          nanosleep (&ts, NULL);
+     133    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     134    8          nanosleep (&ts, NULL);
+     135    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     136    8          nanosleep (&ts, NULL);
+     137    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     138    8          nanosleep (&ts, NULL);
+     139    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     140    8          nanosleep (&ts, NULL);
+     141    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     142    8          nanosleep (&ts, NULL);
+     143    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     144    8          nanosleep (&ts, NULL);
+     145    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     146    8          nanosleep (&ts, NULL);
+     147    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     148    8          nanosleep (&ts, NULL);
+     149    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     150    8          nanosleep (&ts, NULL);
+     151    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     152    8          nanosleep (&ts, NULL);
+     153    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     154    8          nanosleep (&ts, NULL);
+     155    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     156    8          nanosleep (&ts, NULL);
+     157    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     158    8          nanosleep (&ts, NULL);
+     159    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     160    8          nanosleep (&ts, NULL);
+     161    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     162    8          nanosleep (&ts, NULL);
+     163    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     164    8          nanosleep (&ts, NULL);
+     165    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     166    8          nanosleep (&ts, NULL);
+     167    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     168    8          nanosleep (&ts, NULL);
+     169    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     170    8          nanosleep (&ts, NULL);
+     171    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     172    8          nanosleep (&ts, NULL);
+     173    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     174    8          nanosleep (&ts, NULL);
+     175    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     176    8          nanosleep (&ts, NULL);
+     177    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     178    8          nanosleep (&ts, NULL);
+     179    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     180    8          nanosleep (&ts, NULL);
+     181    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     182    8          nanosleep (&ts, NULL);
+     183    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     184    8          nanosleep (&ts, NULL);
+     185    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     186    8          nanosleep (&ts, NULL);
+     187    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     188    8          nanosleep (&ts, NULL);
+     189    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     190    8          nanosleep (&ts, NULL);
+     191    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     192    8          nanosleep (&ts, NULL);
+     193    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     194    8          nanosleep (&ts, NULL);
+     195    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     196    8          nanosleep (&ts, NULL);
+     197    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     198    8          nanosleep (&ts, NULL);
+     199    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     200    8          nanosleep (&ts, NULL);
+     201    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     202    8          nanosleep (&ts, NULL);
+     203    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     204    8          nanosleep (&ts, NULL);
+     205    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     206    8          nanosleep (&ts, NULL);
+     207    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     208    8          nanosleep (&ts, NULL);
+     209    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     210    8          nanosleep (&ts, NULL);
+     211    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     212    8          nanosleep (&ts, NULL);
+     213    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     214    8          nanosleep (&ts, NULL);
+     215    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     216    8          nanosleep (&ts, NULL);
+     217    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     218    8          nanosleep (&ts, NULL);
+     219    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     220    8          nanosleep (&ts, NULL);
+     221    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     222    8          nanosleep (&ts, NULL);
+     223    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     224    8          nanosleep (&ts, NULL);
+     225    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     226    8          nanosleep (&ts, NULL);
+     227    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     228    8          nanosleep (&ts, NULL);
+     229    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     230    8          nanosleep (&ts, NULL);
+     231    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     232    8          nanosleep (&ts, NULL);
+     233    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     234    8          nanosleep (&ts, NULL);
+     235    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     236    8          nanosleep (&ts, NULL);
+     237    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     238    8          nanosleep (&ts, NULL);
+     239    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     240    8          nanosleep (&ts, NULL);
+     241    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     242    8          nanosleep (&ts, NULL);
+     243    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     244    8          nanosleep (&ts, NULL);
+     245    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     246    8          nanosleep (&ts, NULL);
+     247    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     248    8          nanosleep (&ts, NULL);
+     249    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     250    8          nanosleep (&ts, NULL);
+     251    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     252    8          nanosleep (&ts, NULL);
+     253    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     254    8          nanosleep (&ts, NULL);
+     255    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     256    8          nanosleep (&ts, NULL);
+     257    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     258    8          nanosleep (&ts, NULL);
+     259    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     260    8          nanosleep (&ts, NULL);
+     261    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     262    8          nanosleep (&ts, NULL);
+     263    8          XGrabKeyboard (dpy, DefaultRootWindow (dpy), True, GrabModeAsync, GrabModeAsync, CurrentTime) == GrabSuccess
+     264    8          grabkeyboard 1
+     265    6        setup ();
+     266    8          setup 0
+     267   10            drw_scm_create 0
+     268   10            !drw || !clrnames || clrcount < 2 || !(ret = ecalloc (clrcount, sizeof (XftColor)))
+     269   12              ecalloc 0
+     270   12              !(p = calloc (nmemb, size))
+     271   12              ecalloc 1
+     272   10            drw_clr_create (drw, &ret[i], clrnames[i]);
+     273   12              drw_clr_create 0
+     274   12              !drw || !dest || !clrname
+     275   12              !XftColorAllocName (drw->dpy, DefaultVisual (drw->dpy, drw->screen), DefaultColormap (drw->dpy, drw->screen), clrname, dest)
+     276   12              drw_clr_create 1
+     277   10            drw_clr_create (drw, &ret[i], clrnames[i]);
+     278   12              drw_clr_create 0
+     279   12              !drw || !dest || !clrname
+     280   12              !XftColorAllocName (drw->dpy, DefaultVisual (drw->dpy, drw->screen), DefaultColormap (drw->dpy, drw->screen), clrname, dest)
+     281   12              drw_clr_create 1
+     282   10            drw_scm_create 1
+     283   10            drw_scm_create 0
+     284   10            !drw || !clrnames || clrcount < 2 || !(ret = ecalloc (clrcount, sizeof (XftColor)))
+     285   12              ecalloc 0
+     286   12              !(p = calloc (nmemb, size))
+     287   12              ecalloc 1
+     288   10            drw_clr_create (drw, &ret[i], clrnames[i]);
+     289   12              drw_clr_create 0
+     290   12              !drw || !dest || !clrname
+     291   12              !XftColorAllocName (drw->dpy, DefaultVisual (drw->dpy, drw->screen), DefaultColormap (drw->dpy, drw->screen), clrname, dest)
+     292   12              drw_clr_create 1
+     293   10            drw_clr_create (drw, &ret[i], clrnames[i]);
+     294   12              drw_clr_create 0
+     295   12              !drw || !dest || !clrname
+     296   12              !XftColorAllocName (drw->dpy, DefaultVisual (drw->dpy, drw->screen), DefaultColormap (drw->dpy, drw->screen), clrname, dest)
+     297   12              drw_clr_create 1
+     298   10            drw_scm_create 1
+     299   10            drw_scm_create 0
+     300   10            !drw || !clrnames || clrcount < 2 || !(ret = ecalloc (clrcount, sizeof (XftColor)))
+     301   12              ecalloc 0
+     302   12              !(p = calloc (nmemb, size))
+     303   12              ecalloc 1
+     304   10            drw_clr_create (drw, &ret[i], clrnames[i]);
+     305   12              drw_clr_create 0
+     306   12              !drw || !dest || !clrname
+     307   12              !XftColorAllocName (drw->dpy, DefaultVisual (drw->dpy, drw->screen), DefaultColormap (drw->dpy, drw->screen), clrname, dest)
+     308   12              drw_clr_create 1
+     309   10            drw_clr_create (drw, &ret[i], clrnames[i]);
+     310   12              drw_clr_create 0
+     311   12              !drw || !dest || !clrname
+     312   12              !XftColorAllocName (drw->dpy, DefaultVisual (drw->dpy, drw->screen), DefaultColormap (drw->dpy, drw->screen), clrname, dest)
+     313   12              drw_clr_create 1
+     314   10            drw_scm_create 1
+     315    8          !XGetWindowAttributes (dpy, parentwin, &wa)
+     316    8          match ();
+     317   10            match 0
+     318   10            strcpy (buf, text);
+     319   10            lprefix
+     320   10            lsubstr
+     321   10            calcoffsets ();
+     322   12              calcoffsets 0
+     323   12              lines > 0
+     324   14                drw_fontset_getwidth 0
+     325   14                !drw || !drw->fonts || !text
+     326   14                drw_fontset_getwidth 1
+     327   14                drw_text 0
+     328   14                !drw || (render && !drw->scheme) || !text || !drw->fonts
+     329   14                !render
+     330   14                1
+     331   14                *text
+     332   16                  utf8decode 0
+     333   16                  !clen
+     334   18                    utf8decodebyte 0
+     335   18                    ((unsigned char) c & utfmask[*i]) == utfbyte[*i]
+     336   18                    ((unsigned char) c & utfmask[*i]) == utfbyte[*i]
+     337   18                    utf8decodebyte 1
+     338   16                  !BETWEEN (len, 1, UTF_SIZ)
+     339   16                  j < len
+     340   16                  utf8validate (u, len);
+     341   18                    utf8validate 0
+     342   18                    !BETWEEN (*u, utfmin[i], utfmax[i]) || BETWEEN (*u, 0xD800, 0xDFFF)
+     343   18                    utf8validate 1
+     344   16                  utf8decode 1
+     345   14                charexists
+     346   14                curfont == usedfont
+     347   14                !charexists || nextfont
+     348   14                *text
+     349   14                utf8strlen
+     350   14                drw_font_getexts (usedfont, utf8str, utf8strlen, &ew, NULL);
+     351   16                  drw_font_getexts 0
+     352   16                  !font || !text
+     353   16                  XftTextExtentsUtf8 (font->dpy, font->xfont, (XftChar8 *) text, len, &ext);
+     354   16                  w
+     355   16                  h
+     356   16                  drw_font_getexts 1
+     357   14                len
+     358   14                memcpy (buf, utf8str, len);
+     359   14                len < utf8strlen
+     360   14                render
+     361   14                !*text
+     362   14                d
+     363   14                drw_text 1
+     364   14                drw_fontset_getwidth 0
+     365   14                !drw || !drw->fonts || !text
+     366   14                drw_fontset_getwidth 1
+     367   14                drw_text 0
+     368   14                !drw || (render && !drw->scheme) || !text || !drw->fonts
+     369   14                !render
+     370   14                1
+     371   14                *text
+     372   16                  utf8decode 0
+     373   16                  !clen
+     374   18                    utf8decodebyte 0
+     375   18                    ((unsigned char) c & utfmask[*i]) == utfbyte[*i]
+     376   18                    ((unsigned char) c & utfmask[*i]) == utfbyte[*i]
+     377   18                    utf8decodebyte 1
+     378   16                  !BETWEEN (len, 1, UTF_SIZ)
+     379   16                  j < len
+     380   16                  utf8validate (u, len);
+     381   18                    utf8validate 0
+     382   18                    !BETWEEN (*u, utfmin[i], utfmax[i]) || BETWEEN (*u, 0xD800, 0xDFFF)
+     383   18                    utf8validate 1
+     384   16                  utf8decode 1
+     385   14                charexists
+     386   14                curfont == usedfont
+     387   14                !charexists || nextfont
+     388   14                *text
+     389   14                utf8strlen
+     390   14                drw_font_getexts (usedfont, utf8str, utf8strlen, &ew, NULL);
+     391   16                  drw_font_getexts 0
+     392   16                  !font || !text
+     393   16                  XftTextExtentsUtf8 (font->dpy, font->xfont, (XftChar8 *) text, len, &ext);
+     394   16                  w
+     395   16                  h
+     396   16                  drw_font_getexts 1
+     397   14                len
+     398   14                memcpy (buf, utf8str, len);
+     399   14                len < utf8strlen
+     400   14                render
+     401   14                !*text
+     402   14                d
+     403   14                drw_text 1
+     404   12              calcoffsets 1
+     405   10            match 1
+     406    8          XSetClassHint (dpy, win, &ch);
+     407    8          (xim = XOpenIM (dpy, NULL, NULL, NULL)) == NULL
+     408    8          XMapRaised (dpy, win);
+     409    8          embed
+     410    8          drw_resize (drw, mw, mh);
+     411   10            drw_resize 0
+     412   10            !drw
+     413   10            drw->drawable
+     414   10            XFreePixmap (drw->dpy, drw->drawable);
+     415   10            drw_resize 1
+     416    8          drawmenu ();
+     417   10            drawmenu 0
+     418   10            drw_setscheme (drw, scheme[SchemeNorm]);
+     419   12              drw_setscheme 0
+     420   12              drw
+     421   12              drw_setscheme 1
+     422   10            drw_rect (drw, 0, 0, mw, mh, 1, 1);
+     423   12              drw_rect 0
+     424   12              !drw || !drw->scheme
+     425   12              XSetForeground (drw->dpy, drw->gc, invert ? drw->scheme[ColBg].pixel : drw->scheme[ColFg].pixel);
+     426   12              filled
+     427   12              XFillRectangle (drw->dpy, drw->drawable, drw->gc, x, y, w, h);
+     428   12              drw_rect 1
+     429   10            prompt && *prompt
+     430   10            drw_setscheme (drw, scheme[SchemeNorm]);
+     431   12              drw_setscheme 0
+     432   12              drw
+     433   12              drw_setscheme 1
+     434   10            drw_text (drw, x, 0, w, bh, lrpad / 2, text, 0);
+     435   12              drw_text 0
+     436   12              !drw || (render && !drw->scheme) || !text || !drw->fonts
+     437   12              !render
+     438   12              XSetForeground (drw->dpy, drw->gc, drw->scheme[invert ? ColFg : ColBg].pixel);
+     439   12              XFillRectangle (drw->dpy, drw->drawable, drw->gc, x, y, w, h);
+     440   12              1
+     441   12              *text
+     442   12              utf8strlen
+     443   12              !*text
+     444   12              d
+     445   12              XftDrawDestroy (d);
+     446   12              drw_text 1
+     447   12              drw_fontset_getwidth 0
+     448   12              !drw || !drw->fonts || !text
+     449   12              drw_fontset_getwidth 1
+     450   12              drw_text 0
+     451   12              !drw || (render && !drw->scheme) || !text || !drw->fonts
+     452   12              !render
+     453   12              1
+     454   12              *text
+     455   12              utf8strlen
+     456   12              !*text
+     457   12              d
+     458   12              drw_text 1
+     459   12              drw_fontset_getwidth 0
+     460   12              !drw || !drw->fonts || !text
+     461   12              drw_fontset_getwidth 1
+     462   12              drw_text 0
+     463   12              !drw || (render && !drw->scheme) || !text || !drw->fonts
+     464   12              !render
+     465   12              1
+     466   12              *text
+     467   12              utf8strlen
+     468   12              !*text
+     469   12              d
+     470   12              drw_text 1
+     471   10            (curpos += lrpad / 2 - 1) < w
+     472   10            drw_setscheme (drw, scheme[SchemeNorm]);
+     473   12              drw_setscheme 0
+     474   12              drw
+     475   12              drw_setscheme 1
+     476   10            drw_rect (drw, x + curpos, 2, 2, bh - 4, 1, 0);
+     477   12              drw_rect 0
+     478   12              !drw || !drw->scheme
+     479   12              XSetForeground (drw->dpy, drw->gc, invert ? drw->scheme[ColBg].pixel : drw->scheme[ColFg].pixel);
+     480   12              filled
+     481   12              XFillRectangle (drw->dpy, drw->drawable, drw->gc, x, y, w, h);
+     482   12              drw_rect 1
+     483   10            lines > 0
+     484   10            drw_map (drw, win, 0, 0, mw, mh);
+     485   12              drw_map 0
+     486   12              !drw
+     487   12              XCopyArea (drw->dpy, drw->drawable, win, drw->gc, x, y, w, h, x, y);
+     488   12              XSync (drw->dpy, False);
+     489   12              drw_map 1
+     490   10            drawmenu 1
+     491    8          setup 1
+     492    6        run ();
+     493    8          run 0
+     494    8          !XNextEvent (dpy, &ev)
+     495    8          XFilterEvent (&ev, win)
+     496    8          ev.xvisibility.state != VisibilityUnobscured
+     497    8          !XNextEvent (dpy, &ev)
+     498    8          XFilterEvent (&ev, win)
+     499    8          ev.xexpose.count == 0
+     500    8          drw_map (drw, win, 0, 0, mw, mh);
+     501   10            drw_map 0
+     502   10            !drw
+     503   10            XCopyArea (drw->dpy, drw->drawable, win, drw->gc, x, y, w, h, x, y);
+     504   10            XSync (drw->dpy, False);
+     505   10            drw_map 1
+     506    8          !XNextEvent (dpy, &ev)
+     507    8          XFilterEvent (&ev, win)
+     508    8          !XNextEvent (dpy, &ev)
+     509    8          XFilterEvent (&ev, win)
+     510    8          !XNextEvent (dpy, &ev)
+     511    8          XFilterEvent (&ev, win)
+     512    8          !XNextEvent (dpy, &ev)
+     513    8          XFilterEvent (&ev, win)
+     514    8          keypress (&ev.xkey);
+     515   10            keypress 0
+     516   10            ev->state & ControlMask
+     517   10            !iscntrl (*buf)
+     518   10            insert (buf, len);
+     519   12              insert 0
+     520   12              strlen (text) + n > sizeof text - 1
+     521   12              memmove (&text[cursor + n], &text[cursor], sizeof text - cursor - MAX (n, 0));
+     522   12              n > 0
+     523   12              memcpy (&text[cursor], str, n);
+     524   12              match ();
+     525   14                match 0
+     526   14                strcpy (buf, text);
+     527   14                ++tokc > tokn && !(tokv = realloc (tokv, ++tokn * sizeof *tokv))
+     528   14                lprefix
+     529   14                lsubstr
+     530   14                calcoffsets ();
+     531   16                  calcoffsets 0
+     532   16                  lines > 0
+     533   18                    drw_fontset_getwidth 0
+     534   18                    !drw || !drw->fonts || !text
+     535   18                    drw_fontset_getwidth 1
+     536   18                    drw_text 0
+     537   18                    !drw || (render && !drw->scheme) || !text || !drw->fonts
+     538   18                    !render
+     539   18                    1
+     540   18                    *text
+     541   20                      utf8decode 0
+     542   20                      !clen
+     543   22                        utf8decodebyte 0
+     544   22                        ((unsigned char) c & utfmask[*i]) == utfbyte[*i]
+     545   22                        ((unsigned char) c & utfmask[*i]) == utfbyte[*i]
+     546   22                        utf8decodebyte 1
+     547   20                      !BETWEEN (len, 1, UTF_SIZ)
+     548   20                      j < len
+     549   20                      utf8validate (u, len);
+     550   22                        utf8validate 0
+     551   22                        !BETWEEN (*u, utfmin[i], utfmax[i]) || BETWEEN (*u, 0xD800, 0xDFFF)
+     552   22                        utf8validate 1
+     553   20                      utf8decode 1
+     554   18                    charexists
+     555   18                    curfont == usedfont
+     556   18                    !charexists || nextfont
+     557   18                    *text
+     558   18                    utf8strlen
+     559   18                    drw_font_getexts (usedfont, utf8str, utf8strlen, &ew, NULL);
+     560   20                      drw_font_getexts 0
+     561   20                      !font || !text
+     562   20                      XftTextExtentsUtf8 (font->dpy, font->xfont, (XftChar8 *) text, len, &ext);
+     563   20                      w
+     564   20                      h
+     565   20                      drw_font_getexts 1
+     566   18                    len
+     567   18                    memcpy (buf, utf8str, len);
+     568   18                    len < utf8strlen
+     569   18                    render
+     570   18                    !*text
+     571   18                    d
+     572   18                    drw_text 1
+     573   18                    drw_fontset_getwidth 0
+     574   18                    !drw || !drw->fonts || !text
+     575   18                    drw_fontset_getwidth 1
+     576   18                    drw_text 0
+     577   18                    !drw || (render && !drw->scheme) || !text || !drw->fonts
+     578   18                    !render
+     579   18                    1
+     580   18                    *text
+     581   20                      utf8decode 0
+     582   20                      !clen
+     583   22                        utf8decodebyte 0
+     584   22                        ((unsigned char) c & utfmask[*i]) == utfbyte[*i]
+     585   22                        ((unsigned char) c & utfmask[*i]) == utfbyte[*i]
+     586   22                        utf8decodebyte 1
+     587   20                      !BETWEEN (len, 1, UTF_SIZ)
+     588   20                      j < len
+     589   20                      utf8validate (u, len);
+     590   22                        utf8validate 0
+     591   22                        !BETWEEN (*u, utfmin[i], utfmax[i]) || BETWEEN (*u, 0xD800, 0xDFFF)
+     592   22                        utf8validate 1
+     593   20                      utf8decode 1
+     594   18                    charexists
+     595   18                    curfont == usedfont
+     596   18                    !charexists || nextfont
+     597   18                    *text
+     598   18                    utf8strlen
+     599   18                    drw_font_getexts (usedfont, utf8str, utf8strlen, &ew, NULL);
+     600   20                      drw_font_getexts 0
+     601   20                      !font || !text
+     602   20                      XftTextExtentsUtf8 (font->dpy, font->xfont, (XftChar8 *) text, len, &ext);
+     603   20                      w
+     604   20                      h
+     605   20                      drw_font_getexts 1
+     606   18                    len
+     607   18                    memcpy (buf, utf8str, len);
+     608   18                    len < utf8strlen
+     609   18                    render
+     610   18                    !*text
+     611   18                    d
+     612   18                    drw_text 1
+     613   16                  calcoffsets 1
+     614   14                match 1
+     615   12              insert 1
+     616   10            drawmenu ();
+     617   12              drawmenu 0
+     618   12              drw_setscheme (drw, scheme[SchemeNorm]);
+     619   14                drw_setscheme 0
+     620   14                drw
+     621   14                drw_setscheme 1
+     622   12              drw_rect (drw, 0, 0, mw, mh, 1, 1);
+     623   14                drw_rect 0
+     624   14                !drw || !drw->scheme
+     625   14                XSetForeground (drw->dpy, drw->gc, invert ? drw->scheme[ColBg].pixel : drw->scheme[ColFg].pixel);
+     626   14                filled
+     627   14                XFillRectangle (drw->dpy, drw->drawable, drw->gc, x, y, w, h);
+     628   14                drw_rect 1
+     629   12              prompt && *prompt
+     630   12              drw_setscheme (drw, scheme[SchemeNorm]);
+     631   14                drw_setscheme 0
+     632   14                drw
+     633   14                drw_setscheme 1
+     634   12              drw_text (drw, x, 0, w, bh, lrpad / 2, text, 0);
+     635   14                drw_text 0
+     636   14                !drw || (render && !drw->scheme) || !text || !drw->fonts
+     637   14                !render
+     638   14                XSetForeground (drw->dpy, drw->gc, drw->scheme[invert ? ColFg : ColBg].pixel);
+     639   14                XFillRectangle (drw->dpy, drw->drawable, drw->gc, x, y, w, h);
+     640   14                1
+     641   14                *text
+     642   16                  utf8decode 0
+     643   16                  !clen
+     644   18                    utf8decodebyte 0
+     645   18                    ((unsigned char) c & utfmask[*i]) == utfbyte[*i]
+     646   18                    ((unsigned char) c & utfmask[*i]) == utfbyte[*i]
+     647   18                    utf8decodebyte 1
+     648   16                  !BETWEEN (len, 1, UTF_SIZ)
+     649   16                  j < len
+     650   16                  utf8validate (u, len);
+     651   18                    utf8validate 0
+     652   18                    !BETWEEN (*u, utfmin[i], utfmax[i]) || BETWEEN (*u, 0xD800, 0xDFFF)
+     653   18                    utf8validate 1
+     654   16                  utf8decode 1
+     655   14                charexists
+     656   14                curfont == usedfont
+     657   14                !charexists || nextfont
+     658   14                *text
+     659   14                utf8strlen
+     660   14                drw_font_getexts (usedfont, utf8str, utf8strlen, &ew, NULL);
+     661   16                  drw_font_getexts 0
+     662   16                  !font || !text
+     663   16                  XftTextExtentsUtf8 (font->dpy, font->xfont, (XftChar8 *) text, len, &ext);
+     664   16                  w
+     665   16                  h
+     666   16                  drw_font_getexts 1
+     667   14                len
+     668   14                memcpy (buf, utf8str, len);
+     669   14                len < utf8strlen
+     670   14                render
+     671   14                XftDrawStringUtf8 (d, &drw->scheme[invert ? ColBg : ColFg], usedfont->xfont, x, ty, (XftChar8 *) buf, len);
+     672   14                !*text
+     673   14                d
+     674   14                XftDrawDestroy (d);
+     675   14                drw_text 1
+     676   14                drw_fontset_getwidth 0
+     677   14                !drw || !drw->fonts || !text
+     678   14                drw_fontset_getwidth 1
+     679   14                drw_text 0
+     680   14                !drw || (render && !drw->scheme) || !text || !drw->fonts
+     681   14                !render
+     682   14                1
+     683   14                *text
+     684   16                  utf8decode 0
+     685   16                  !clen
+     686   18                    utf8decodebyte 0
+     687   18                    ((unsigned char) c & utfmask[*i]) == utfbyte[*i]
+     688   18                    ((unsigned char) c & utfmask[*i]) == utfbyte[*i]
+     689   18                    utf8decodebyte 1
+     690   16                  !BETWEEN (len, 1, UTF_SIZ)
+     691   16                  j < len
+     692   16                  utf8validate (u, len);
+     693   18                    utf8validate 0
+     694   18                    !BETWEEN (*u, utfmin[i], utfmax[i]) || BETWEEN (*u, 0xD800, 0xDFFF)
+     695   18                    utf8validate 1
+     696   16                  utf8decode 1
+     697   14                charexists
+     698   14                curfont == usedfont
+     699   14                !charexists || nextfont
+     700   14                *text
+     701   14                utf8strlen
+     702   14                drw_font_getexts (usedfont, utf8str, utf8strlen, &ew, NULL);
+     703   16                  drw_font_getexts 0
+     704   16                  !font || !text
+     705   16                  XftTextExtentsUtf8 (font->dpy, font->xfont, (XftChar8 *) text, len, &ext);
+     706   16                  w
+     707   16                  h
+     708   16                  drw_font_getexts 1
+     709   14                len
+     710   14                memcpy (buf, utf8str, len);
+     711   14                len < utf8strlen
+     712   14                render
+     713   14                !*text
+     714   14                d
+     715   14                drw_text 1
+     716   14                drw_fontset_getwidth 0
+     717   14                !drw || !drw->fonts || !text
+     718   14                drw_fontset_getwidth 1
+     719   14                drw_text 0
+     720   14                !drw || (render && !drw->scheme) || !text || !drw->fonts
+     721   14                !render
+     722   14                1
+     723   14                *text
+     724   14                utf8strlen
+     725   14                !*text
+     726   14                d
+     727   14                drw_text 1
+     728   12              (curpos += lrpad / 2 - 1) < w
+     729   12              drw_setscheme (drw, scheme[SchemeNorm]);
+     730   14                drw_setscheme 0
+     731   14                drw
+     732   14                drw_setscheme 1
+     733   12              drw_rect (drw, x + curpos, 2, 2, bh - 4, 1, 0);
+     734   14                drw_rect 0
+     735   14                !drw || !drw->scheme
+     736   14                XSetForeground (drw->dpy, drw->gc, invert ? drw->scheme[ColBg].pixel : drw->scheme[ColFg].pixel);
+     737   14                filled
+     738   14                XFillRectangle (drw->dpy, drw->drawable, drw->gc, x, y, w, h);
+     739   14                drw_rect 1
+     740   12              lines > 0
+     741   12              drw_map (drw, win, 0, 0, mw, mh);
+     742   14                drw_map 0
+     743   14                !drw
+     744   14                XCopyArea (drw->dpy, drw->drawable, win, drw->gc, x, y, w, h, x, y);
+     745   14                XSync (drw->dpy, False);
+     746   14                drw_map 1
+     747   12              drawmenu 1
+     748   10            keypress 1
+     749    8          !XNextEvent (dpy, &ev)
+     750    8          XFilterEvent (&ev, win)
+     751    8          !XNextEvent (dpy, &ev)
+     752    8          XFilterEvent (&ev, win)
+     753    8          !XNextEvent (dpy, &ev)
+     754    8          XFilterEvent (&ev, win)
+     755    8          keypress (&ev.xkey);
+     756   10            keypress 0
+     757   10            ev->state & ControlMask
+     758   10            !iscntrl (*buf)
+     759   10            insert (buf, len);
+     760   12              insert 0
+     761   12              strlen (text) + n > sizeof text - 1
+     762   12              memmove (&text[cursor + n], &text[cursor], sizeof text - cursor - MAX (n, 0));
+     763   12              n > 0
+     764   12              memcpy (&text[cursor], str, n);
+     765   12              match ();
+     766   14                match 0
+     767   14                strcpy (buf, text);
+     768   14                ++tokc > tokn && !(tokv = realloc (tokv, ++tokn * sizeof *tokv))
+     769   14                lprefix
+     770   14                lsubstr
+     771   14                calcoffsets ();
+     772   16                  calcoffsets 0
+     773   16                  lines > 0
+     774   18                    drw_fontset_getwidth 0
+     775   18                    !drw || !drw->fonts || !text
+     776   18                    drw_fontset_getwidth 1
+     777   18                    drw_text 0
+     778   18                    !drw || (render && !drw->scheme) || !text || !drw->fonts
+     779   18                    !render
+     780   18                    1
+     781   18                    *text
+     782   20                      utf8decode 0
+     783   20                      !clen
+     784   22                        utf8decodebyte 0
+     785   22                        ((unsigned char) c & utfmask[*i]) == utfbyte[*i]
+     786   22                        ((unsigned char) c & utfmask[*i]) == utfbyte[*i]
+     787   22                        utf8decodebyte 1
+     788   20                      !BETWEEN (len, 1, UTF_SIZ)
+     789   20                      j < len
+     790   20                      utf8validate (u, len);
+     791   22                        utf8validate 0
+     792   22                        !BETWEEN (*u, utfmin[i], utfmax[i]) || BETWEEN (*u, 0xD800, 0xDFFF)
+     793   22                        utf8validate 1
+     794   20                      utf8decode 1
+     795   18                    charexists
+     796   18                    curfont == usedfont
+     797   18                    !charexists || nextfont
+     798   18                    *text
+     799   18                    utf8strlen
+     800   18                    drw_font_getexts (usedfont, utf8str, utf8strlen, &ew, NULL);
+     801   20                      drw_font_getexts 0
+     802   20                      !font || !text
+     803   20                      XftTextExtentsUtf8 (font->dpy, font->xfont, (XftChar8 *) text, len, &ext);
+     804   20                      w
+     805   20                      h
+     806   20                      drw_font_getexts 1
+     807   18                    len
+     808   18                    memcpy (buf, utf8str, len);
+     809   18                    len < utf8strlen
+     810   18                    render
+     811   18                    !*text
+     812   18                    d
+     813   18                    drw_text 1
+     814   18                    drw_fontset_getwidth 0
+     815   18                    !drw || !drw->fonts || !text
+     816   18                    drw_fontset_getwidth 1
+     817   18                    drw_text 0
+     818   18                    !drw || (render && !drw->scheme) || !text || !drw->fonts
+     819   18                    !render
+     820   18                    1
+     821   18                    *text
+     822   20                      utf8decode 0
+     823   20                      !clen
+     824   22                        utf8decodebyte 0
+     825   22                        ((unsigned char) c & utfmask[*i]) == utfbyte[*i]
+     826   22                        ((unsigned char) c & utfmask[*i]) == utfbyte[*i]
+     827   22                        utf8decodebyte 1
+     828   20                      !BETWEEN (len, 1, UTF_SIZ)
+     829   20                      j < len
+     830   20                      utf8validate (u, len);
+     831   22                        utf8validate 0
+     832   22                        !BETWEEN (*u, utfmin[i], utfmax[i]) || BETWEEN (*u, 0xD800, 0xDFFF)
+     833   22                        utf8validate 1
+     834   20                      utf8decode 1
+     835   18                    charexists
+     836   18                    curfont == usedfont
+     837   18                    !charexists || nextfont
+     838   18                    *text
+     839   18                    utf8strlen
+     840   18                    drw_font_getexts (usedfont, utf8str, utf8strlen, &ew, NULL);
+     841   20                      drw_font_getexts 0
+     842   20                      !font || !text
+     843   20                      XftTextExtentsUtf8 (font->dpy, font->xfont, (XftChar8 *) text, len, &ext);
+     844   20                      w
+     845   20                      h
+     846   20                      drw_font_getexts 1
+     847   18                    len
+     848   18                    memcpy (buf, utf8str, len);
+     849   18                    len < utf8strlen
+     850   18                    render
+     851   18                    !*text
+     852   18                    d
+     853   18                    drw_text 1
+     854   16                  calcoffsets 1
+     855   14                match 1
+     856   12              insert 1
+     857   10            drawmenu ();
+     858   12              drawmenu 0
+     859   12              drw_setscheme (drw, scheme[SchemeNorm]);
+     860   14                drw_setscheme 0
+     861   14                drw
+     862   14                drw_setscheme 1
+     863   12              drw_rect (drw, 0, 0, mw, mh, 1, 1);
+     864   14                drw_rect 0
+     865   14                !drw || !drw->scheme
+     866   14                XSetForeground (drw->dpy, drw->gc, invert ? drw->scheme[ColBg].pixel : drw->scheme[ColFg].pixel);
+     867   14                filled
+     868   14                XFillRectangle (drw->dpy, drw->drawable, drw->gc, x, y, w, h);
+     869   14                drw_rect 1
+     870   12              prompt && *prompt
+     871   12              drw_setscheme (drw, scheme[SchemeNorm]);
+     872   14                drw_setscheme 0
+     873   14                drw
+     874   14                drw_setscheme 1
+     875   12              drw_text (drw, x, 0, w, bh, lrpad / 2, text, 0);
+     876   14                drw_text 0
+     877   14                !drw || (render && !drw->scheme) || !text || !drw->fonts
+     878   14                !render
+     879   14                XSetForeground (drw->dpy, drw->gc, drw->scheme[invert ? ColFg : ColBg].pixel);
+     880   14                XFillRectangle (drw->dpy, drw->drawable, drw->gc, x, y, w, h);
+     881   14                1
+     882   14                *text
+     883   16                  utf8decode 0
+     884   16                  !clen
+     885   18                    utf8decodebyte 0
+     886   18                    ((unsigned char) c & utfmask[*i]) == utfbyte[*i]
+     887   18                    ((unsigned char) c & utfmask[*i]) == utfbyte[*i]
+     888   18                    utf8decodebyte 1
+     889   16                  !BETWEEN (len, 1, UTF_SIZ)
+     890   16                  j < len
+     891   16                  utf8validate (u, len);
+     892   18                    utf8validate 0
+     893   18                    !BETWEEN (*u, utfmin[i], utfmax[i]) || BETWEEN (*u, 0xD800, 0xDFFF)
+     894   18                    utf8validate 1
+     895   16                  utf8decode 1
+     896   14                charexists
+     897   14                curfont == usedfont
+     898   14                !charexists || nextfont
+     899   14                *text
+     900   16                  utf8decode 0
+     901   16                  !clen
+     902   18                    utf8decodebyte 0
+     903   18                    ((unsigned char) c & utfmask[*i]) == utfbyte[*i]
+     904   18                    ((unsigned char) c & utfmask[*i]) == utfbyte[*i]
+     905   18                    utf8decodebyte 1
+     906   16                  !BETWEEN (len, 1, UTF_SIZ)
+     907   16                  j < len
+     908   16                  utf8validate (u, len);
+     909   18                    utf8validate 0
+     910   18                    !BETWEEN (*u, utfmin[i], utfmax[i]) || BETWEEN (*u, 0xD800, 0xDFFF)
+     911   18                    utf8validate 1
+     912   16                  utf8decode 1
+     913   14                charexists
+     914   14                curfont == usedfont
+     915   14                !charexists || nextfont
+     916   14                *text
+     917   14                utf8strlen
+     918   14                drw_font_getexts (usedfont, utf8str, utf8strlen, &ew, NULL);
+     919   16                  drw_font_getexts 0
+     920   16                  !font || !text
+     921   16                  XftTextExtentsUtf8 (font->dpy, font->xfont, (XftChar8 *) text, len, &ext);
+     922   16                  w
+     923   16                  h
+     924   16                  drw_font_getexts 1
+     925   14                len
+     926   14                memcpy (buf, utf8str, len);
+     927   14                len < utf8strlen
+     928   14                render
+     929   14                XftDrawStringUtf8 (d, &drw->scheme[invert ? ColBg : ColFg], usedfont->xfont, x, ty, (XftChar8 *) buf, len);
+     930   14                !*text
+     931   14                d
+     932   14                XftDrawDestroy (d);
+     933   14                drw_text 1
+     934   14                drw_fontset_getwidth 0
+     935   14                !drw || !drw->fonts || !text
+     936   14                drw_fontset_getwidth 1
+     937   14                drw_text 0
+     938   14                !drw || (render && !drw->scheme) || !text || !drw->fonts
+     939   14                !render
+     940   14                1
+     941   14                *text
+     942   16                  utf8decode 0
+     943   16                  !clen
+     944   18                    utf8decodebyte 0
+     945   18                    ((unsigned char) c & utfmask[*i]) == utfbyte[*i]
+     946   18                    ((unsigned char) c & utfmask[*i]) == utfbyte[*i]
+     947   18                    utf8decodebyte 1
+     948   16                  !BETWEEN (len, 1, UTF_SIZ)
+     949   16                  j < len
+     950   16                  utf8validate (u, len);
+     951   18                    utf8validate 0
+     952   18                    !BETWEEN (*u, utfmin[i], utfmax[i]) || BETWEEN (*u, 0xD800, 0xDFFF)
+     953   18                    utf8validate 1
+     954   16                  utf8decode 1
+     955   14                charexists
+     956   14                curfont == usedfont
+     957   14                !charexists || nextfont
+     958   14                *text
+     959   16                  utf8decode 0
+     960   16                  !clen
+     961   18                    utf8decodebyte 0
+     962   18                    ((unsigned char) c & utfmask[*i]) == utfbyte[*i]
+     963   18                    ((unsigned char) c & utfmask[*i]) == utfbyte[*i]
+     964   18                    utf8decodebyte 1
+     965   16                  !BETWEEN (len, 1, UTF_SIZ)
+     966   16                  j < len
+     967   16                  utf8validate (u, len);
+     968   18                    utf8validate 0
+     969   18                    !BETWEEN (*u, utfmin[i], utfmax[i]) || BETWEEN (*u, 0xD800, 0xDFFF)
+     970   18                    utf8validate 1
+     971   16                  utf8decode 1
+     972   14                charexists
+     973   14                curfont == usedfont
+     974   14                !charexists || nextfont
+     975   14                *text
+     976   14                utf8strlen
+     977   14                drw_font_getexts (usedfont, utf8str, utf8strlen, &ew, NULL);
+     978   16                  drw_font_getexts 0
+     979   16                  !font || !text
+     980   16                  XftTextExtentsUtf8 (font->dpy, font->xfont, (XftChar8 *) text, len, &ext);
+     981   16                  w
+     982   16                  h
+     983   16                  drw_font_getexts 1
+     984   14                len
+     985   14                memcpy (buf, utf8str, len);
+     986   14                len < utf8strlen
+     987   14                render
+     988   14                !*text
+     989   14                d
+     990   14                drw_text 1
+     991   14                drw_fontset_getwidth 0
+     992   14                !drw || !drw->fonts || !text
+     993   14                drw_fontset_getwidth 1
+     994   14                drw_text 0
+     995   14                !drw || (render && !drw->scheme) || !text || !drw->fonts
+     996   14                !render
+     997   14                1
+     998   14                *text
+     999   14                utf8strlen
+    1000   14                !*text
+    1001   14                d
+    1002   14                drw_text 1
+    1003   12              (curpos += lrpad / 2 - 1) < w
+    1004   12              drw_setscheme (drw, scheme[SchemeNorm]);
+    1005   14                drw_setscheme 0
+    1006   14                drw
+    1007   14                drw_setscheme 1
+    1008   12              drw_rect (drw, x + curpos, 2, 2, bh - 4, 1, 0);
+    1009   14                drw_rect 0
+    1010   14                !drw || !drw->scheme
+    1011   14                XSetForeground (drw->dpy, drw->gc, invert ? drw->scheme[ColBg].pixel : drw->scheme[ColFg].pixel);
+    1012   14                filled
+    1013   14                XFillRectangle (drw->dpy, drw->drawable, drw->gc, x, y, w, h);
+    1014   14                drw_rect 1
+    1015   12              lines > 0
+    1016   12              drw_map (drw, win, 0, 0, mw, mh);
+    1017   14                drw_map 0
+    1018   14                !drw
+    1019   14                XCopyArea (drw->dpy, drw->drawable, win, drw->gc, x, y, w, h, x, y);
+    1020   14                XSync (drw->dpy, False);
+    1021   14                drw_map 1
+    1022   12              drawmenu 1
+    1023   10            keypress 1
+    1024    8          !XNextEvent (dpy, &ev)
+    1025    8          XFilterEvent (&ev, win)
+    1026    8          !XNextEvent (dpy, &ev)
+    1027    8          XFilterEvent (&ev, win)
+    1028    8          !XNextEvent (dpy, &ev)
+    1029    8          XFilterEvent (&ev, win)
+    1030    8          keypress (&ev.xkey);
+    1031   10            keypress 0
+    1032   10            ev->state & ControlMask
+    1033   10            cleanup ();
+    1034   12              cleanup 0
+    1035   12              XUngrabKey (dpy, AnyKey, AnyModifier, root);
+    1036   12              free (scheme[i]);
+    1037   12              free (scheme[i]);
+    1038   12              free (scheme[i]);
+    1039   12              drw_free (drw);
+    1040   14                drw_free 0
+    1041   14                XFreePixmap (drw->dpy, drw->drawable);
+    1042   14                XFreeGC (drw->dpy, drw->gc);
+    1043   14                free (drw);
+    1044   14                drw_free 1
+    1045   12              XSync (dpy, False);
+    1046   12              XCloseDisplay (dpy);
+    1047   12              cleanup 1
+    1048   10            exit (1);
