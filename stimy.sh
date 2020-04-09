@@ -3,7 +3,7 @@ stimy.substitute()
     local reslist devlist libdir includedir bindir cmd i perl_version \
     vendor_perl \
     cmdlist='dirname basename cat ls mv sudo cp chmod ln chown rm touch
-    chmod head mkdir perl mktemp shred egrep make sed realpath find'
+    head mkdir perl mktemp shred egrep make sed realpath find'
 
     declare -A Devlist=(
     [dot]='dot'
@@ -106,7 +106,7 @@ stimy.target()
         \builtin printf "%s" "LDADD=${libdir}/libstimy.so" >> \${configfile} 
         return
     fi
-    configfile="\$(find \${targetdir} -regextype sed -regex ".*/config.mk$")" 
+    configfile="\$(find \${targetdir} -regextype sed -regex ".*/config.am$")" 
     if [[ -w \${configfile} ]];then
        $sed -i "s;^\([[:alnum:]]*LDFLAGS.*\)\$;\1 ${libdir}/libstimy.so;" \${configfile}
         return
@@ -126,17 +126,15 @@ stimy.preprocessor()
 }
 stimy.uninstall()
 {
-     $sudo $rm -f ${bindir}/stimy
-     $sudo $rm -f ${libdir}/libstimy.so
-     $sudo $rm -f ${includedir}/stimy.h 
+     $rm -f ${bindir}/stimy
+     $rm -f ${libdir}/libstimy.so
+     $rm -f ${includedir}/stimy.h 
 }
 stimy.lib()
 {
     (
         \builtin cd src &&\
-        $sudo $cp -f stimy.h ${includedir}/stimy.h &&\
-        $chown \$USER:\$USER ${includedir}/stimy.h &&\
-        $chmod a=r ${includedir}/stimy.h &&\
+        $cp -f stimy.h ${includedir}/ &&\
         $gcc -g3 -fPIC -c stimy.c &&\
         $gcc -g3 -shared -o libstimy.so stimy.o  
     )
@@ -145,12 +143,12 @@ stimy.install()
 {
     stimy.uninstall
     [[ -r src/libstimy.so ]] || return
-    $sudo $cp src/libstimy.so ${libdir}/ &&\
-    $sudo $chmod u=r,go=r ${libdir}/libstimy.so &&\
-    $sudo $cp src/stimy.h ${includedir}/ &&\
-    $sudo $chmod u=r,go=r ${includedir}/stimy.h 
-    $sudo $sed "s;PERLVERSION;$perl_version;" src/stimy.pl >${bindir}/stimy &&\
-    $sudo $chmod u=rx,go= ${bindir}/stimy
+    $cp src/libstimy.so ${libdir}/ &&\
+    $chmod u=r,go=r ${libdir}/libstimy.so &&\
+    $cp src/stimy.h ${includedir}/ &&\
+    $chmod u=r,go=r ${includedir}/stimy.h 
+    $sed "s;PERLVERSION;$perl_version;" src/stimy.pl >${bindir}/stimy &&\
+    $chmod u=rx,go= ${bindir}/stimy
 }
 stimy.test()
 {
@@ -167,7 +165,7 @@ stimy.test()
 stimy.clear()
 {
     (
-        \builtin \cd test/ && $rm -f *.o
+        \builtin \cd test/ && $rm -f *.o verify
     )
     (
         \builtin \cd src/ && $rm -f *.so *.o
@@ -186,6 +184,9 @@ config.status
 autom4te.cache/
 config.h.in
 test/verify
+test/.*
+src/.*
+src/libstimy.so
 .*
 *.o
 stimy
