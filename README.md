@@ -31,7 +31,7 @@ The install script will pick the latest Perl version from your system.
 > ./application
 # Restore the original [project].
 > stimy.restore.target [project~]
-# Show call-graph without consequtive repeatitive function call.
+# Show call-graph without consecutive and repetitive function call.
 > stimy.fold /tmp/stimy0.txt
 ```
 ## Examples
