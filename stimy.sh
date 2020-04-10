@@ -3,7 +3,7 @@ stimy.substitute()
     local reslist devlist libdir includedir bindir cmd i perl_version \
     vendor_perl \
     cmdlist='dirname basename cat ls mv sudo cp chmod ln chown rm touch
-    head mkdir perl mktemp shred egrep make sed realpath find'
+    head mkdir perl mktemp shred egrep make sed realpath find less'
 
     declare -A Devlist=(
     [dot]='dot'
@@ -42,10 +42,10 @@ stimy.substitute()
 
     \builtin source <($cat<<-EOF
 
-stimy.fold()
+stimy.squeeze()
 {
     local input=\${1:?[input file]}
-    $perl - "\${input}" <<-'STIMYFOLD'
+    $perl - "\${input}" <<-'STIMYFOLD' | $less
     use $perl_version;
     use strict;
     no warnings 'uninitialized';

@@ -32,7 +32,7 @@ The install script will pick the latest Perl version from your system.
 # Restore the original [project].
 > stimy.restore.target [project~]
 # Showing call-graph with squeezed consecutive and repetitive function call.
-> stimy.fold /tmp/stimy0.txt
+> stimy.squeeze /tmp/stimy0.txt
 ```
 ## Examples
 ```
