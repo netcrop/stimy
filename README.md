@@ -31,13 +31,12 @@ The install script will pick the latest Perl version from your system.
 > ./application
 # Restore the original [project].
 > stimy.restore.target [project~]
-# Show call-graph without consecutive and repetitive function call.
+# Showing call-graph with squeezed consecutive and repetitive function call.
 > stimy.fold /tmp/stimy0.txt
 ```
 ## Examples
 ```
-# Here is a example run-time call-graph from the [dmenu] application.
-# The entire call-graph is located inside github.com/netcrop/stimy/misc/dmenu.txt.
+# Here is a partial run-time call-graph from the [dmenu] application.
 0    6        main 0
 1    8          drw_create 0
 2   10            ecalloc 0
