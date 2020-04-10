@@ -62,22 +62,27 @@ stimy.fold()
     open(INPUT, '<', "\$me{input}")
     or die "Cann't open file \$me{intput}.";
     {
-        foreach(<INPUT>){
+        @{res} = <INPUT>;
+        print \$res[0];
+        print \$res[1];
+        for(my \$i = 2; \$i < @{res}; \$i++){
+            \$_ = \$res[\$i];
             s{
                 (\$sp)(\$digits)(\$sp)(\$digits)(\$sp)(.*)(\$zeroone)
             }{
-                \$me{key} = "\$3\$4\$5\$6\$7";
-                if(!exists \$hash{"\$me{key}"}){
-                    \$hash{"\$me{key}"}="\$2";
-                }elsif("\$me{prevfun}" cmp "\$6"){
-                    \$hash{"\$me{key}"}="\$2";
-                }
+                \$me{fun} = "\$6\$7";
             }msex;
-            \$me{prevfun} = "\$6";
+            \$me{prev} = \${i} - 2;
+            \$_ = \$res[\$me{prev}]; 
+            s{
+                (\$sp)(\$digits)(\$sp)(\$digits)(\$sp)(.*)(\$zeroone)
+            }{
+                \$me{prevfun} = "\$6\$7";
+            }msex;
+            if(\$me{fun} cmp \$me{prevfun}){
+                print \$res[\$i];
+            }
         }
-    }
-    foreach my \$i (sort {\$hash{\$a} <=> \$hash{\$b}} keys %hash){
-        printf "%8s%s\n", "\$hash{\$i}", "\$i";
     }
 #    say Dumper(\\%me);
 STIMYFOLD
