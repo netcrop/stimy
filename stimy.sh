@@ -42,6 +42,46 @@ stimy.substitute()
 
     \builtin source <($cat<<-EOF
 
+stimy.fold()
+{
+    local input=\${1:?[input file]}
+    $perl - "\${input}" <<-'STIMYFOLD'
+    use $perl_version;
+    use strict;
+    no warnings 'uninitialized';
+#    use Data::Dumper;
+    my \$sp = '[ ]+';
+    my \$nl ='\n';
+    my \$zeroone = '[0-1]';
+    my \$digits = '[0-9]+';
+    my @res;
+    my %me=(
+        input => \$ARGV[0],
+    );
+    my %hash=();
+    open(INPUT, '<', "\$me{input}")
+    or die "Cann't open file \$me{intput}.";
+    {
+        foreach(<INPUT>){
+            s{
+                (\$sp)(\$digits)(\$sp)(\$digits)(\$sp)(.*)(\$zeroone)
+            }{
+                \$me{key} = "\$3\$4\$5\$6\$7";
+                if(!exists \$hash{"\$me{key}"}){
+                    \$hash{"\$me{key}"}="\$2";
+                }elsif("\$me{prevfun}" cmp "\$6"){
+                    \$hash{"\$me{key}"}="\$2";
+                }
+            }msex;
+            \$me{prevfun} = "\$6";
+        }
+    }
+    foreach my \$i (sort {\$hash{\$a} <=> \$hash{\$b}} keys %hash){
+        printf "%8s%s\n", "\$hash{\$i}", "\$i";
+    }
+#    say Dumper(\\%me);
+STIMYFOLD
+}
 stimy.info()
 {
     $cat<<-STIMYINFO
@@ -106,7 +146,7 @@ stimy.target()
         \builtin printf "%s" "LDADD=${libdir}/libstimy.so" >> \${configfile} 
         return
     fi
-    configfile="\$(find \${targetdir} -regextype sed -regex ".*/config.am$")" 
+    configfile="\$(find \${targetdir} -regextype sed -regex ".*/config.mk$")" 
     if [[ -w \${configfile} ]];then
        $sed -i "s;^\([[:alnum:]]*LDFLAGS.*\)\$;\1 ${libdir}/libstimy.so;" \${configfile}
         return

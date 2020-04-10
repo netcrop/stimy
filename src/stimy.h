@@ -40,20 +40,23 @@ do{\
 } while(0)
 #define stimy_demand() stimy_emit(0);
 #define stimy_reply(X) do { stimy_emit(1); return X; } while(0)
-enum { EXIST = 0, STIMYINSTANS = 9, FILENAMESIZE = 16, SPACEPADD =
-        4, SPACESIZE = 80 };
-typedef struct stimy_t stimy_t;
-struct stimy_t {
-    FILE *fp;
-    char filename[FILENAMESIZE];
-    atomic_int counter;
-    atomic_char space[SPACESIZE];
-    atomic_int index;
-    struct stat *pfilestat;
+enum
+{ EXIST = 0, STIMYINSTANS = 9, FILENAMESIZE = 16, SPACEPADD =
+    4, SPACESIZE = 80
 };
-void stimy_mlocate(void **, size_t);
-void stimy_delocate(void);
-extern void stimy_alocate(void);
-extern void stimy_checkfile(void);
-stimy_t * pstimy;
+typedef struct stimy_t stimy_t;
+struct stimy_t
+{
+  FILE *fp;
+  char filename[FILENAMESIZE];
+  atomic_int counter;
+  atomic_char space[SPACESIZE];
+  atomic_int index;
+  struct stat *pfilestat;
+};
+void stimy_mlocate (void **, size_t);
+void stimy_delocate (void);
+extern void stimy_alocate (void);
+extern void stimy_checkfile (void);
+stimy_t *pstimy;
 #define stimy (*pstimy)

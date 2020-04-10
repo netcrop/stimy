@@ -14,8 +14,8 @@ my $space = ' ';
 my $semicol = ';';
 my $nl = "\n";
 my $indent = $space x 4;
-my $insertbegin = $lbrace . $nl . $indent . 'stimy_demand();' . $nl;
-my $insertend = $indent . 'stimy_reply();' . $nl . $rbrace;
+my $insertbegin = $lbrace . $nl . $indent . 'stimy_demand();';
+my $insertend = $nl . $indent . 'stimy_reply();' . $nl . $rbrace;
 my $word = '(?!return)(?:[a-zA-Z_][0-9a-zA-Z_]*)';
 my $otherword = '(?!return|if|while|for|switch)(?:[a-zA-Z_][0-9a-zA-Z_]*)';
 my $arguments='(?:[[:alnum:]]|[\_\,\%\\\&\-\(\>\.\*\"\:\[\]]|\s*)+';
@@ -33,6 +33,7 @@ my %keywords2 = (
     switch => 1,
 );
 my %me = (
+    i => 0,
     unicodesize => 256,
     brace_indicater => 2,
     block => 0,
@@ -95,10 +96,30 @@ sub frbrace {
     fblock_list();
     $me{block} = 0;
 }
-sub fblock_list {
+sub fblock_list()
+{
+    for ($me{i} = $me{input_index} + 1; $me{i} < $me{input_len};$me{i}++){
+        $_ = substr($me{input},$me{i},1);
+        if(m;$nl;){
+            fstatement_list();
+            return;
+        }
+        if(m;$semicol;){
+            fother_list();
+            return;
+        }
+    }
+}
+sub fother_list {
+    $me{output} .= substr($me{input},$me{block_index},$me{block_len}+1);
+}
+sub fstatement_list {
     $me{output} .= "$insertbegin";
-#    $_ = substr($me{input},$me{block_index} + 1,$me{block_len} - 2);
-#    $me{output} .= "$_";
+    $_ = substr($me{input},$me{block_index} + 1,$me{block_len} - 2);
+    s{
+        return$sp(.*);
+    }{stimy_reply($1);}mxg;
+    $me{output} .= "$_";
     $me{output} .= "$insertend";
 }
 # Definition end Execution begin.

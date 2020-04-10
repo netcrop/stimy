@@ -49,7 +49,8 @@ void if_2(int *a, char *b)
 char decl0;
 int f3(void)
 {
-
+    for(int i=1;i<3;i++)
+        ;
 }
 
 static char
