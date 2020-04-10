@@ -24,33 +24,40 @@ The install script will pick the latest Perl version from your system.
 # and insert C preprocessor macros inside each C source file in the newly copied [project].
 > stimy.target [project source dir]
 
-Build install and run the application as usual.
+# Build install and run the application as usual.
 > cd [project]
 > make
 > make install
 > ./application
+# Restore the original [project].
 > stimy.restore.target [project~]
-> cat /tmp/stimy0.txt
+# Show call-graph without consequtive repeatitive function call.
+> stimy.fold /tmp/stimy0.txt
 ```
 ## Examples
 ```
 # Here is a example run-time call-graph from the [dmenu] application.
 # The entire call-graph is located inside github.com/netcrop/stimy/misc/dmenu.txt.
-
-1     6        !setlocale (LC_CTYPE, "") || !XSupportsLocale ()
-2     6        !(dpy = XOpenDisplay (NULL))
-3     6        !embed || !(parentwin = strtol (embed, NULL, 0))
-4     6        !XGetWindowAttributes (dpy, parentwin, &wa)
-5     8          drw_create 0
-6    10            ecalloc 0
-7    10            !(p = calloc (nmemb, size))
-8    10            ecalloc 1
-12    8          drw_fontset_create 0
-13    8          !drw || !fonts
-14    8          (cur = xfont_create (drw, fonts[fontcount - i], NULL))
-15   10            xfont_create 0
-16   10            fontname
-17   10            !(xfont = XftFontOpenName (drw->dpy, drw->screen,
+0    6        main 0
+1    8          drw_create 0
+2   10            ecalloc 0
+3   10            ecalloc 1
+4    8          drw_create 1
+5    8          drw_fontset_create 0
+6   10            xfont_create 0
+7   12              ecalloc 0
+8   12              ecalloc 1
+9   10            xfont_create 1
+10    8          drw_fontset_create 1
+11    8          readstdin 0
+12   10            drw_font_getexts 0
+13   10            drw_font_getexts 1
+62   10            drw_fontset_getwidth 0
+63   10            drw_fontset_getwidth 1
+64   10            drw_text 0
+65   12              utf8decode 0
+66   14                utf8decodebyte 0
+67   14                utf8decodebyte 1
 ```
 ## Releases
 
@@ -61,3 +68,4 @@ github.com/netcrop/stimy/pulls
 ## License
 
 [GNU General Public License version 2 (GPLv2)](https://raw.githubusercontent.com/netcrop/lwrap/beta/LICENSE)
+      
