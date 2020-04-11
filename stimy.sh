@@ -69,16 +69,15 @@ stimy.squeeze()
     or die "Cann't open file \$me{intput}.";
     {
         @{res} = <INPUT>;
-        print \$fun[0] = \$res[0];
-        print \$fun[1] = \$res[1];
-        for(my \$i = 2; \$i < @{res}; \$i++){
-            \$_ = \$res[\$i];
+        \$fun[0] = \$res[0];
+        \$fun[1] = \$res[1];
+        foreach(@{res}){
             s{
                 (\$sp)(\$digits)(\$sp)(\$digits)(\$sp)(.*)(\$zeroone)
             }{
                 # When Not equal: cmp => 1.
                 if("\$6\$7" cmp \$fun[\$me{index}]){
-                    print \$res[\$i];
+                    print \$_;
                 }
                 \$fun[\$me{index}] = "\$6\$7";
                 findex();
