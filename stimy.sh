@@ -42,6 +42,52 @@ stimy.substitute()
 
     \builtin source <($cat<<-EOF
 
+stimy.fold()
+{
+    local input=\${1:?[input file]}
+    $perl - "\${input}" <<-'STIMYFOLD' | $less
+    use $perl_version;
+    use strict;
+    no warnings 'uninitialized';
+#    use Data::Dumper;
+    my \$sp = '[ ]+';
+    my \$nl ='\n';
+    my \$zeroone = '[0-1]';
+    my \$digits = '[0-9]+';
+    my @res;
+    my @fun = ('','');
+    my %me=(
+        input => \$ARGV[0],
+        index => 0,
+    );
+    my %hash=();
+    sub findex()
+    {
+        \$me{index} = 0 if(\$me{index}++ > 0);
+    }
+    open(INPUT, '<', "\$me{input}")
+    or die "Cann't open file \$me{intput}.";
+    {
+        @{res} = <INPUT>;
+        print \$fun[0] = \$res[0];
+        print \$fun[1] = \$res[1];
+        for(my \$i = 2; \$i < @{res}; \$i++){
+            \$_ = \$res[\$i];
+            s{
+                (\$sp)(\$digits)(\$sp)(\$digits)(\$sp)(.*)(\$zeroone)
+            }{
+                # When Not equal: cmp => 1.
+                if("\$6\$7" cmp \$fun[\$me{index}]){
+                    print \$res[\$i];
+                }
+                \$fun[\$me{index}] = "\$6\$7";
+                findex();
+            }msex;
+        }
+    }
+#    say Dumper(\\%me);
+STIMYFOLD
+}
 stimy.squeeze()
 {
     local input=\${1:?[input file]}

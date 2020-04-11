@@ -86,7 +86,7 @@ sub fblock {
 sub flbrace {
     $me{num_brace}++;    
 }
-# When nr of brace has been decresed to zero.
+# When nr of brace has been decreased to zero.
 sub frbrace {
     if($me{num_brace} >0){
         $me{num_brace}--;
