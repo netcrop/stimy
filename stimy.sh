@@ -61,7 +61,7 @@ stimy.squeeze()
         index => 0,
     );
     my %hash=();
-    sub findex()
+    sub flipindex()
     {
         \$me{index} = 0 if(\$me{index}++ > 0);
     }
@@ -80,7 +80,8 @@ stimy.squeeze()
                     print \$_;
                 }
                 \$fun[\$me{index}] = "\$6\$7";
-                findex();
+                # flip index means compare with 2 step behind.
+                flipindex();
             }msex;
         }
     }
