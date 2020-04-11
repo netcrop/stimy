@@ -42,10 +42,10 @@ stimy.substitute()
 
     \builtin source <($cat<<-EOF
 
-stimy.fold()
+stimy.squeeze()
 {
     local input=\${1:?[input file]}
-    $perl - "\${input}" <<-'STIMYFOLD' | $less
+    $perl - "\${input}" <<-'STIMYSQUEEZE' | $less
     use $perl_version;
     use strict;
     no warnings 'uninitialized';
@@ -86,52 +86,7 @@ stimy.fold()
         }
     }
 #    say Dumper(\\%me);
-STIMYFOLD
-}
-stimy.squeeze()
-{
-    local input=\${1:?[input file]}
-    $perl - "\${input}" <<-'STIMYFOLD' | $less
-    use $perl_version;
-    use strict;
-    no warnings 'uninitialized';
-#    use Data::Dumper;
-    my \$sp = '[ ]+';
-    my \$nl ='\n';
-    my \$zeroone = '[0-1]';
-    my \$digits = '[0-9]+';
-    my @res;
-    my %me=(
-        input => \$ARGV[0],
-    );
-    my %hash=();
-    open(INPUT, '<', "\$me{input}")
-    or die "Cann't open file \$me{intput}.";
-    {
-        @{res} = <INPUT>;
-        print \$res[0];
-        print \$res[1];
-        for(my \$i = 2; \$i < @{res}; \$i++){
-            \$_ = \$res[\$i];
-            s{
-                (\$sp)(\$digits)(\$sp)(\$digits)(\$sp)(.*)(\$zeroone)
-            }{
-                \$me{fun} = "\$6\$7";
-            }msex;
-            \$me{prev} = \${i} - 2;
-            \$_ = \$res[\$me{prev}]; 
-            s{
-                (\$sp)(\$digits)(\$sp)(\$digits)(\$sp)(.*)(\$zeroone)
-            }{
-                \$me{prevfun} = "\$6\$7";
-            }msex;
-            if(\$me{fun} cmp \$me{prevfun}){
-                print \$res[\$i];
-            }
-        }
-    }
-#    say Dumper(\\%me);
-STIMYFOLD
+STIMYSQUEEZE
 }
 stimy.info()
 {
