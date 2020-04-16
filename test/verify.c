@@ -1,11 +1,14 @@
 #include <stdio.h>
-int f1()
+int
+f1 ()
 {
-    return 1;
+  return 0;
 }
-int main()
+int
+main ()
 {
-    if(f1())
-        return 0;
-    return 1;
+  if (f1 () == 0)
+    ;
+  f1();
+  return 0;
 }

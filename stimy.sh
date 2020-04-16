@@ -10,6 +10,7 @@ stimy.substitute()
     [valgrind]='valgrind'
     [indent]='indent'
     [stimy]='stimy'
+    [stretch]='stretch'
     [gcc]='gcc'
     )
     cmdlist="${Devlist[@]} $cmdlist"
@@ -80,7 +81,7 @@ stimy.squeeze()
                     print \$_;
                 }
                 \$fun[\$me{index}] = "\$6\$7";
-                # flip index means compare with 2 step behind.
+                # flip index means compare with 2 step behind on next loop.
                 flipindex();
             }msex;
         }
@@ -116,7 +117,7 @@ stimy.parser()
     local input=\${1:?[input]}
     local trace=\${2:+'-d:Trace'}
     local tmpfile=\$($mktemp)
-    stimy.indent "\$input" >\$tmpfile
+    $stretch "\$input" >\$tmpfile
     $stimy "\$tmpfile"
     stimy_delocate
 }
@@ -142,7 +143,7 @@ stimy.target()
         \builtin cd \$targetdir &&\
         for i in \$($find -regextype sed -regex ".*\.c$"|\
             $egrep -v 'stimy.c|config.h|config.def.h');do
-            stimy.indent \$i > \$i~
+            $stretch \$i > \$i~
             $stimy \$i~ > \$i
             $rm -f \$i~
         done
@@ -173,6 +174,7 @@ stimy.preprocessor()
 stimy.uninstall()
 {
      $rm -f ${bindir}/stimy
+     $rm -f ${bindir}/stretch
      $rm -f ${libdir}/libstimy.so
      $rm -f ${includedir}/stimy.h 
 }
@@ -195,6 +197,14 @@ stimy.install()
     $chmod u=r,go=r ${includedir}/stimy.h 
     $sed "s;PERLVERSION;$perl_version;" src/stimy.pl >${bindir}/stimy &&\
     $chmod u=rx,go= ${bindir}/stimy
+    $sed "s;PERLVERSION;$perl_version;" src/stretch.pl >${bindir}/stretch &&\
+    $chmod u=rx,go= ${bindir}/stretch
+}
+stimy.syntax()
+{
+    (
+        \builtin \cd test/ && $make && ./verify
+    )
 }
 stimy.test()
 {

@@ -3,7 +3,7 @@ use PERLVERSION;
 use strict;
 use warnings;
 #  no warnings 'uninitialized';
-use Data::Dumper;
+#use Data::Dumper;
 my $empty = '';
 my $log = undef;
 my $sp = '\s*';
@@ -14,10 +14,8 @@ my $rbrace = '}';
 my $col = ":";
 my $space = ' ';
 my $semicol = ';';
-my $nl = "\n";
+my $nl = '\n';
 my $indent = $space x 4;
-my $insertbegin = $lbrace . $nl . $indent . 'stimy_demand();';
-my $insertend = $nl . $indent . 'stimy_reply();' . $nl . $rbrace;
 my $anyword = '(?:[a-zA-Z_][0-9a-zA-Z_-]*)';
 my $keyword = '(?:return|if|while|for|switch)';
 my $word = '(?!return)(?:[a-zA-Z_][0-9a-zA-Z_]*)';
@@ -28,14 +26,6 @@ my $rparent = ')';
 my $rparentnosemicol = '\)(?!\;)';
 my $begin = '^';
 my $end = '\$';
-my %keywords = (
-    if => 1,
-    while => 1,
-);
-my %keywords2 = (
-    for => 1,
-    switch => 1,
-);
 my %me = (
     tmp => ' ',
     replacement => ' ',
@@ -43,13 +33,9 @@ my %me = (
     infile => $ARGV[0],
     i => 0,
     unicodesize => 256,
-    brace_indicater => 2,
-    column => 0,
     num_brace => 0,
     num_parent => 0,
-    preinput => "#ifndef STIMY_H\n#include <stimy.h>\n#endif\n",
 );
-my %column = (0 => 0,1 => 1);
 sub rparent{
     ord($rparent);
 }
@@ -70,12 +56,12 @@ sub semicol{
 }
 sub fnothing { ; }
 # Decision table argument:
-# 0, ascii character. 1, column indicator. 2, function pointer.  
+# 0, ascii character. 1, function pointer.  
 sub hash{
     $me{unicode}[$_[0]] = $_[1];
 }
-sub removecomments {
-    say $log "removecomments";
+sub nocomments {
+    say $log "prerun";
     $_ = $me{input};
     s{
       ((['"]) (?: \. | .)*? \2) | # skip quoted strings
@@ -84,8 +70,25 @@ sub removecomments {
      }{
          $1 || ' '   # change comments to a single space
     }sexg;    # ignore white space, treat as single line
+    $me{input} = $_;
+}
+sub squeeze()
+{
+   say $log "squeeze";
+    $_ = $me{input};
     s{
         $sp($semicol)
+    }{
+        $1;
+    }sexg;
+    $me{input} = $_;
+}
+sub emptyline()
+{
+    say $log "emptyline";
+    $_ = $me{input};
+    s{
+        $nl$sp($nl)
     }{
         $1;
     }sexg;
@@ -124,49 +127,20 @@ sub frparent {
     }
     fparenthesis() if($me{num_parent} == 0);
 }
-sub freplace()
-{
-    $me{replaced_len} = length($me{replaced});
-    substr($me{input},$me{replaced_index},$me{replaced_len},$me{replacement});
-    $me{increment} = length($me{replacement}) - $me{replaced_len};
+sub fparenthesis {
+    print $log "fparenthesis:";
+    $me{replaced_len} = $me{input_index} - $me{parent_index} + 1;
+    $_ = substr($me{input},$me{parent_index},$me{replaced_len});
+    s{
+        ($nl$sp)
+    }{
+        $1 && ''
+    }sexg;
+    substr($me{input},$me{parent_index},$me{replaced_len},"$_");
+    $me{increment} = length("$_") - $me{replaced_len};
     $me{input_index} += $me{increment};
     $me{input_len} += $me{increment};
-    $me{found_index} += $me{increment};
-    $me{brace_len} = $me{found_index};
-}
-sub fstatement {
-    print $log "fstatement:brace_len:$me{brace_len},";
-    $_ = substr($me{input},$me{brace_len},$me{parent_index} - $me{brace_len});
-    s{
-        ($anyword)$sp$
-    }{
-        $me{replaced} = "$1";
-        $me{replaced} .= substr($me{input},$me{parent_index},
-            $me{found_index} - $me{parent_index});
-        $me{replacement} = "stimy_print($me{replaced})";
-        $me{replaced_index} = $me{brace_len} + $-[0];
-        freplace();
-    }sexg;
-    say $log $me{replacement};
-}
-sub fparenthesis {
-    print $log "fparenthesis: found: ";
-    # The rest of the untached input.
-    for (my $i = $me{input_index} + 1; $i < $me{input_len};$i++){
-        $_ = substr($me{input},$i,1);
-        if(m;$semicol;){
-            $me{found_index} = $i;
-            say $log substr($me{input},$me{found_index},1);
-            fstatement();
-            return;
-        }
-        if(m;$nonsp;){
-            $me{found_index} = $i;
-            say $log substr($me{input},$me{found_index},1);
-            return;
-        }
-    }
-    print $log $nl;
+    say $log "$_";
 }
 # Definition end Execution begin.
 # Prepare unicode Hash decision table.
@@ -183,13 +157,15 @@ open($log, '>', "$me{logfile}") or die "Cann't open file: $me{logfile}. $!";
 open(INPUT, '<', "$me{infile}") or die "Cann't open file: $me{infile}. $!";
 local $/ = undef;
 $me{input} = <INPUT>;
-removecomments();
+nocomments();
+squeeze();
+emptyline();
 $me{input_len} = length($me{input});
 # Execute function name equal to each character inside C source code from Hash table.
 for ($me{input_index} = 0; $me{input_index} < $me{input_len}; $me{input_index}++) {
     $me{character} = substr($me{input},$me{input_index},1);
     $me{unicode}[ord($me{character})]();
 }
-print "$me{preinput}$me{input}";
+print "$me{input}";
 close $log;
 #say Dumper(\%me);
