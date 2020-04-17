@@ -99,10 +99,33 @@ sub flookahead {
         return 0 if(m;$nl;);
     }
 }
+sub return_statement {
+    say $log "return_statement:";
+    $me{replaced_index} = $me{brace_index} + 1;
+    $_ = substr($me{input},$me{replaced_index},$me{input_index} - $me{replaced_index});
+    $me{replaced} = $_;
+    s{
+        return$sp([^;]*)$semicol
+    }{
+        "stimy_reply($1);";
+    }mexg;
+    $me{replacement} = $_;
+    freplace();
+}
+sub freplace {
+    say $log "freplace: $me{replaced} WITH $me{replacement}";
+    $me{replaced_len} = length($me{replaced});
+    substr($me{input},$me{replaced_index},$me{replaced_len},$me{replacement});
+    $me{increment} = length($me{replacement}) - $me{replaced_len};
+    $me{input_index} += $me{increment};
+    $me{input_len} += $me{increment};
+    $me{brace_len} += $me{increment};
+}
 # End of bracket-block.
 sub frbrace {
     say $log "frbrace:$me{num_brace}";
     return if(--$me{num_brace} >0);
+    return_statement();
     return if(flookahead());
     $me{replaced} = $rbrace;
     $me{replacement} = $insertend;
@@ -127,15 +150,7 @@ sub frparent {
     say $log "frparent:$me{num_parent}";
     fparenthesis() if(--$me{num_parent} == 0);
 }
-sub freplace {
-    say $log "freplace: $me{replacement}";
-    $me{replaced_len} = length($me{replaced});
-    substr($me{input},$me{replaced_index},$me{replaced_len},$me{replacement});
-    $me{increment} = length($me{replacement}) - $me{replaced_len};
-    $me{input_index} += $me{increment};
-    $me{input_len} += $me{increment};
-    $me{brace_len} += $me{increment};
-}
+
 sub fparenthesis {
     say $log "fparenthesis:"; 
     for(my $i = $me{input_index} + 1; $i < $me{input_len}; $i++){
@@ -161,7 +176,7 @@ sub fstatement {
             $me{replaced_index} = $me{brace_len} + $-[0];
             freplace();
         }
-    }sexg;
+    }sex;
 }
 sub openfile {
     open($log, '>', "$me{logfile}") or die "Cann't open file: $me{logfile}. $!";
@@ -186,9 +201,12 @@ sub run {
         $me{character} = substr($me{input},$me{input_index},1);
         $me{unicode}[ord($me{character})]();
     }
+}
+sub postrun {
     print "$me{preinput}$me{input}";
     close $log;
 }
 openfile();
 run();
+postrun();
 #say Dumper(\%me);
