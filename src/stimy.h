@@ -17,9 +17,9 @@ do{\
 	X;\
 } while(0)
 
-#define stimy_echo(X) \
-    fprintf(stimy.fp,"%8d %4d %s %s\n",\
-    stimy.counter++,stimy.index,stimy.space,#X)
+#define stimy_condition(X) \
+    (fprintf(stimy.fp,"%8d %4d %s %s\n",\
+    stimy.counter++,stimy.index,stimy.space,#X) ? (X) : (X))
 
 #define stimy_emit(N) \
 do{\

@@ -4,6 +4,7 @@ use strict;
 use warnings;
 #  no warnings 'uninitialized';
 use Data::Dumper;
+my $equal = '=';
 my $empty = '';
 my $log = undef;
 my $sp = '\s*';
@@ -28,15 +29,9 @@ my $rparent = ')';
 my $rparentnosemicol = '\)(?!\;)';
 my $begin = '^';
 my $end = '\$';
-my %keywords = (
-    if => 1,
-    while => 1,
-);
-my %keywords2 = (
-    for => 1,
-    switch => 1,
-);
 my %me = (
+    brace_len => 0,
+    parent_index => 0,
     tmp => ' ',
     replacement => ' ',
     logfile => '/tmp/stimy.txt',
@@ -74,122 +69,126 @@ sub fnothing { ; }
 sub hash{
     $me{unicode}[$_[0]] = $_[1];
 }
-sub removecomments {
-    say $log "removecomments";
-    $_ = $me{input};
-    s{
-      ((['"]) (?: \. | .)*? \2) | # skip quoted strings
-       /\* .*? \*/ |  # delete C comments
-       // [^\n\r]*   # delete C++ comments
-     }{
-         $1 || ' '   # change comments to a single space
-    }sexg;    # ignore white space, treat as single line
-    s{
-        $sp($semicol)
-    }{
-        $1;
-    }sexg;
-    $me{input} = $_;
+sub flookbehind {
+    for(my $i = $me{input_index} - 1; $i >= 0; $i--){
+        $_ = substr($me{input},$i,1);
+        return 0 if(m;[${rparent}];);
+        return 1 if(m;$nonsp;);
+    }
 }
 sub flbrace {
     say $log "flbrace:$me{num_brace}";
-    if($me{num_brace} == 0) {
-        $me{brace_index} = $me{input_index};
-        $me{brace_len} = $me{brace_index};
-    }
-    $me{num_brace}++;    
-}
-# End of bracket-block.
-sub frbrace {
-    say $log "frbrace:$me{num_brace}";
-    if($me{num_brace} >0){
-        $me{num_brace}--;
-        return;
-    }
-}
-sub flparent {
-    return if($me{num_brace} <= 0 );
-    say $log "flparent:num_parent:$me{num_parent},input_i:$me{input_index}";
-    if($me{num_parent} == 0){
-        $me{parent_index} = $me{input_index};
-    }
-    $me{num_parent}++;
-}
-# End of one parenthesis-block.
-sub frparent {
-    return if($me{num_brace} <= 0 );
-    say $log "frparent:$me{num_parent}";
-    if($me{num_parent} > 0){
-        $me{num_parent}--;
-    }
-    fparenthesis() if($me{num_parent} == 0);
-}
-sub freplace()
-{
+    return if(++$me{num_brace} > 1);
+    $me{brace_index} = $me{input_index};   
+    return if(flookbehind());
+    $me{replaced} = $lbrace;
+    $me{replacement} = $insertbegin;
+    $me{replaced_index} =$me{input_index}; 
     $me{replaced_len} = length($me{replaced});
     substr($me{input},$me{replaced_index},$me{replaced_len},$me{replacement});
     $me{increment} = length($me{replacement}) - $me{replaced_len};
     $me{input_index} += $me{increment};
     $me{input_len} += $me{increment};
-    $me{found_index} += $me{increment};
-    $me{brace_len} = $me{found_index};
+    $me{brace_index} = $me{input_index};
+    $me{brace_len} = $me{brace_index};
 }
-sub fstatement {
-    print $log "fstatement:brace_len:$me{brace_len},";
-    $_ = substr($me{input},$me{brace_len},$me{parent_index} - $me{brace_len});
-    s{
-        ($anyword)$sp$
-    }{
-        $me{replaced} = "$1";
-        $me{replaced} .= substr($me{input},$me{parent_index},
-            $me{found_index} - $me{parent_index});
-        $me{replacement} = "stimy_print($me{replaced})";
-        $me{replaced_index} = $me{brace_len} + $-[0];
-        freplace();
-    }sexg;
-    say $log $me{replacement};
+sub flookahead {
+    for(my $i = $me{input_index} + 1; $i < $me{input_len}; $i++){
+        $_ = substr($me{input},$i,1);
+        return 1 if(m;$nonsp;);
+        return 0 if(m;$nl;);
+    }
+}
+# End of bracket-block.
+sub frbrace {
+    say $log "frbrace:$me{num_brace}";
+    return if(--$me{num_brace} >0);
+    return if(flookahead());
+    $me{replaced} = $rbrace;
+    $me{replacement} = $insertend;
+    $me{replaced_index} = $me{input_index}; 
+    $me{replaced_len} = length($me{replaced});
+    substr($me{input},$me{replaced_index},$me{replaced_len},$me{replacement});
+    $me{increment} = length($me{replacement}) - $me{replaced_len};
+    $me{input_index} += $me{increment};
+    $me{input_len} += $me{increment};
+    $me{brace_index} = $me{input_index};
+    $me{brace_len} = $me{brace_index};
+}
+sub flparent {
+    return if($me{num_brace} < 1);
+    say $log "flparent:$me{num_parent} i:$me{input_index}";
+    $me{parent_index} = $me{input_index} if($me{num_parent} == 0);
+    $me{num_parent}++;
+}
+# End of one statement-block.
+sub frparent {
+    return if($me{num_brace} < 1);
+    say $log "frparent:$me{num_parent}";
+    fparenthesis() if(--$me{num_parent} == 0);
+}
+sub freplace {
+    say $log "freplace: $me{replacement}";
+    $me{replaced_len} = length($me{replaced});
+    substr($me{input},$me{replaced_index},$me{replaced_len},$me{replacement});
+    $me{increment} = length($me{replacement}) - $me{replaced_len};
+    $me{input_index} += $me{increment};
+    $me{input_len} += $me{increment};
+    $me{brace_len} += $me{increment};
 }
 sub fparenthesis {
-    print $log "fparenthesis: found: ";
-    # The rest of the untached input.
-    for (my $i = $me{input_index} + 1; $i < $me{input_len};$i++){
+    say $log "fparenthesis:"; 
+    for(my $i = $me{input_index} + 1; $i < $me{input_len}; $i++){
         $_ = substr($me{input},$i,1);
-        if(m;$semicol;){
-            $me{found_index} = $i;
-            say $log substr($me{input},$me{found_index},1);
-            fstatement();
-            return;
-        }
+        return if(m;$equal;);
         if(m;$nonsp;){
-            $me{found_index} = $i;
-            say $log substr($me{input},$me{found_index},1);
-            return;
+            fstatement();
+            return;    
         }
     }
-    print $log $nl;
 }
-# Definition end Execution begin.
-# Prepare unicode Hash decision table.
-for (my $i = 0; $i < $me{unicodesize}; $i++){
-    hash($i,\&fnothing);
+sub fstatement {
+    say $log "fstatement:";
+    $_ = substr($me{input},$me{brace_len},$me{parent_index} - $me{brace_len});
+    s{
+        ($anyword$sp)$
+    }{
+        $me{replaced} = "$1" || return;
+        if( $me{replaced} !~ $keyword){
+            $me{replaced} .= substr($me{input},$me{parent_index},
+                $me{input_index} - $me{parent_index} + 1);
+            $me{replacement} = "stimy_condition($me{replaced})";
+            $me{replaced_index} = $me{brace_len} + $-[0];
+            freplace();
+        }
+    }sexg;
 }
-# Prepare specific ASCII => function name decision.
-hash(lbrace(),\&flbrace);
-hash(rbrace(),\&frbrace);
-hash(lparent(),\&flparent);
-hash(rparent(),\&frparent);
-
-open($log, '>', "$me{logfile}") or die "Cann't open file: $me{logfile}. $!";
-open(INPUT, '<', "$me{infile}") or die "Cann't open file: $me{infile}. $!";
-local $/ = undef;
-$me{input} = <INPUT>;
-removecomments();
-$me{input_len} = length($me{input});
-# Execute function name equal to each character inside C source code from Hash table.
-for ($me{input_index} = 0; $me{input_index} < $me{input_len}; $me{input_index}++) {
-    $me{character} = substr($me{input},$me{input_index},1);
-    $me{unicode}[ord($me{character})]();
+sub openfile {
+    open($log, '>', "$me{logfile}") or die "Cann't open file: $me{logfile}. $!";
+    open(INPUT, '<', "$me{infile}") or die "Cann't open file: $me{infile}. $!";
+    local $/ = undef;
+    $me{input} = <INPUT>;
+    $me{input_len} = length($me{input});
 }
-print "$me{preinput}$me{input}";
-close $log;
+sub run {
+    # Definition end Execution begin.
+    # Prepare unicode Hash decision table.
+    for (my $i = 0; $i < $me{unicodesize}; $i++){
+        hash($i,\&fnothing);
+    }
+    # Prepare specific ASCII => function name decision.
+    hash(lbrace(),\&flbrace);
+    hash(rbrace(),\&frbrace);
+    hash(lparent(),\&flparent);
+    hash(rparent(),\&frparent);
+    # Execute function to each character inside C source code from Hash table.
+    for ($me{input_index} = 0; $me{input_index} < $me{input_len}; $me{input_index}++){
+        $me{character} = substr($me{input},$me{input_index},1);
+        $me{unicode}[ord($me{character})]();
+    }
+    print "$me{preinput}$me{input}";
+    close $log;
+}
+openfile();
+run();
 #say Dumper(\%me);

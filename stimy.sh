@@ -8,7 +8,6 @@ stimy.substitute()
     declare -A Devlist=(
     [dot]='dot'
     [valgrind]='valgrind'
-    [indent]='indent'
     [stimy]='stimy'
     [stretch]='stretch'
     [gcc]='gcc'
@@ -97,13 +96,6 @@ stimy.info()
     # Or append to Makefile.mk
     LDADD = $libdir/libstimy.so
 STIMYINFO
-}
-stimy.indent()
-{
-  local infile=\${1:?[C file]}
-  $indent --indent-level8 --no-tabs \
-    --line-length200 \
-    --standard-output \${infile}
 }
 stimy.parser()
 {
