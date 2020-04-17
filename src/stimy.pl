@@ -21,7 +21,7 @@ my $insertbegin = $lbrace . $nl . $indent . 'stimy_demand();';
 my $insertend = $nl . $indent . 'stimy_reply();' . $nl . $rbrace;
 my $anyword = '(?:[a-zA-Z_][0-9a-zA-Z_-]*)';
 my $keyword = '(?:return|if|while|for|switch)';
-my $word = '(?!return)(?:[a-zA-Z_][0-9a-zA-Z_]*)';
+my $nonword = '(?!stimy)(?:[a-zA-Z_][0-9a-zA-Z_-]*)';
 my $otherword = '(?!return|if|while|for|switch)(?:[a-zA-Z_][0-9a-zA-Z_]*)';
 my $arguments='(?:[[:alnum:]]|[\_\,\%\\\&\-\(\>\.\*\"\:\[\]]|\s*)+';
 my $lparent = '(';
@@ -162,6 +162,21 @@ sub fparenthesis {
         }
     }
 }
+sub fkeyword_statement {
+    say $log "fkeyword_statement:";
+    $me{replaced_index} = $me{parent_index} + 1;
+    $_ = substr($me{input},$me{replaced_index},$me{input_index} - $me{replaced_index});
+    $me{replaced} = $_;
+    say $log $_;
+    s{
+        ($anyword${sp}[$lparent](?:[^()]*)[$rparent])
+    }{
+        "$1" || return;
+        "stimy_condition($1)";
+    }sexg;
+    $me{replacement} = $_;
+    freplace();
+}
 sub fstatement {
     say $log "fstatement:";
     $_ = substr($me{input},$me{brace_len},$me{parent_index} - $me{brace_len});
@@ -175,7 +190,9 @@ sub fstatement {
             $me{replacement} = "stimy_condition($me{replaced})";
             $me{replaced_index} = $me{brace_len} + $-[0];
             freplace();
+            return;
         }
+        fkeyword_statement();
     }sex;
 }
 sub openfile {
