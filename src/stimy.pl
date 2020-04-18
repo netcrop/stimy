@@ -16,7 +16,7 @@ my $col = ':';
 my $space = ' ';
 my $semicol = ';';
 my $nl = "\n";
-my $wordsep = '(?:[ \t\n(\;])';
+my $wordsep = '(?:[ \t\n!\(\;])';
 my $indent = $space x 4;
 my $insertbegin = $lbrace . $nl . $indent . 'stimy_demand();';
 my $insertend = $nl . $indent . 'stimy_reply();' . $nl . $rbrace;
@@ -31,9 +31,9 @@ my $rparent = ')';
 my $rparentnosemicol = '\)(?!\;)';
 my $begin = '^';
 my $end = '\$';
-my $pi = 0;
 my @path = ();
 my %me = (
+    pi => -1,
     brace_len => 0,
     parent_index => 0,
     tmp => ' ',
@@ -45,7 +45,6 @@ my %me = (
     brace_indicater => 2,
     column => 0,
     num_brace => 0,
-    num_parent => 0,
     preinput => "#ifndef STIMY_H\n#include <stimy.h>\n#endif\n",
 );
 my %column = (0 => 0,1 => 1);
@@ -117,7 +116,7 @@ sub return_statement {
     freplace();
 }
 sub freplace {
-    say $log "freplace: $me{replaced} WITH $me{replacement}";
+#    say $log "freplace: $me{replaced} WITH $me{replacement}";
     $me{replaced_len} = length($me{replaced});
     substr($me{input},$me{replaced_index},$me{replaced_len},$me{replacement});
     $me{increment} = length($me{replacement}) - $me{replaced_len};
@@ -144,21 +143,35 @@ sub frbrace {
 }
 sub flparent {
     return if($me{num_brace} < 1);
-    say $log "flparent:$pi i:$me{input_index}";
-    @path[$pi++] = $me{input_index};
-    $me{parent_index} = $me{input_index} if($me{num_parent} == 0);
-    $me{num_parent}++;
+    $path[++$me{pi}] = $me{input_index};
+    say $log "flparent:$me{pi} i:$me{input_index}";
 }
 # End of one statement-block.
 sub frparent {
     return if($me{num_brace} < 1);
-    say $log "frparent:$me{num_parent}";
-    fparenthesis() if(--$me{num_parent} == 0);
+    say $log "frparent:$me{pi} i:$me{input_index}";
+    fparentlookahead();
+    $path[$me{pi}--] = undef;
 }
-
-sub fparenthesis {
-    say $log "fparenthesis:"; 
-    for(my $i = $me{input_index} + 1; $i < $me{input_len} - 2; $i++){
+sub fparentlookbehind {
+    say $log "fparentlookbehind:"; 
+    $_ = substr($me{input},$me{brace_len},$path[$me{pi}] - $me{brace_len});
+    s{
+        $wordsep($anyword$sp)$
+    }{
+        "$1" || return;
+        $me{replaced} = "$1";
+        return if($me{replaced} =~ $keyword );
+        $me{replaced} .= substr($me{input},$path[$me{pi}],
+            $me{input_index} - $path[$me{pi}]);
+        $me{replacement} = "stimy_condition($me{replaced})";
+        $me{replaced_index} = $me{brace_len} + $-[1];
+        freplace();
+    }sex;
+}
+sub fparentlookahead {
+    say $log "fparentlookahead:"; 
+    for(my $i = $me{input_index} + 1; $i < $me{input_len} - 3; $i++){
         $_ = substr($me{input},$i,1);
         if(m;$nonsp;){
             $_ = substr($me{input},$i,3);
@@ -171,45 +184,10 @@ sub fparenthesis {
             }{
                 "$1" && return; 
             }sex;
-            fstatement();
+            fparentlookbehind();
             return;
         }
     }
-}
-sub fkeyword_statement {
-    say $log "fkeyword_statement:";
-    $me{replaced_index} = $me{parent_index} + 1;
-    $_ = substr($me{input},$me{replaced_index},$me{input_index} - $me{replaced_index});
-    $me{replaced} = $_;
-    say $log $_;
-    s{
-        ($anyword${sp}[$lparent](?:[^()]*)[$rparent])
-    }{
-        "$1" || return;
-        return if("$1" =~ $ignoreword);
-        "stimy_condition($1)";
-    }sexg;
-    $me{replacement} = $_;
-    freplace();
-}
-sub fstatement {
-    say $log "fstatement:";
-    $_ = substr($me{input},$me{brace_len},$me{parent_index} - $me{brace_len});
-    s{
-       $wordsep($anyword$sp)$
-    }{
-        "$1" || return;
-        $me{replaced} = "$1";
-        if( $me{replaced} !~ $keyword){
-            $me{replaced} .= substr($me{input},$me{parent_index},
-                $me{input_index} - $me{parent_index} + 1);
-            $me{replacement} = "stimy_condition($me{replaced})";
-            $me{replaced_index} = $me{brace_len} + $-[1];
-            freplace();
-            return;
-        }
-        fkeyword_statement();
-    }sex;
 }
 sub openfile {
     open($log, '>', "$me{logfile}") or die "Cann't open file: $me{logfile}. $!";
