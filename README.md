@@ -1,5 +1,5 @@
 ## stimy
-Stimy is a run-time call-graph generator library for applications written in C programming language.
+Stimy is a run-time call-graph generator library. It can be used as a white-box (source code) testing tool to inspect the run time behaviour of any application build using C programming language.
 Stimy itself is written in C, Bash and Perl.
 ## Compile install and uninstall
 * For linux/unix system:  
