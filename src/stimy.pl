@@ -2,27 +2,28 @@
 use PERLVERSION;
 use strict;
 use warnings;
-#  no warnings 'uninitialized';
+no warnings 'uninitialized';
 use Data::Dumper;
 my $equal = '=';
 my $empty = '';
 my $log = undef;
 my $sp = '\s*';
 my $nonsp = '\S';
-my $tab = "\t";
+my $tab = '\t';
 my $lbrace = '{';
 my $rbrace = '}';
-my $col = ":";
+my $col = ':';
 my $space = ' ';
 my $semicol = ';';
 my $nl = "\n";
+my $wordsep = '(?:[ \t\n(\;])';
 my $indent = $space x 4;
 my $insertbegin = $lbrace . $nl . $indent . 'stimy_demand();';
 my $insertend = $nl . $indent . 'stimy_reply();' . $nl . $rbrace;
-my $anyword = '(?:[a-zA-Z_][0-9a-zA-Z_-]*)';
+my $ignoreword ='(?:__typeof__)';
+my $anyword = '(?:[a-zA-Z_][0-9a-zA-Z_\-]*)';
 my $keyword = '(?:return|if|while|for|switch)';
-my $nonword = '(?!stimy)(?:[a-zA-Z_][0-9a-zA-Z_-]*)';
-my $otherword = '(?!return|if|while|for|switch)(?:[a-zA-Z_][0-9a-zA-Z_]*)';
+my $otherword = '(?!return|if|[a-zA-Z_][0-9a-zA-Z_\-]*)';
 my $arguments='(?:[[:alnum:]]|[\_\,\%\\\&\-\(\>\.\*\"\:\[\]]|\s*)+';
 my $lparent = '(';
 my $rparent = ')';
@@ -172,6 +173,7 @@ sub fkeyword_statement {
         ($anyword${sp}[$lparent](?:[^()]*)[$rparent])
     }{
         "$1" || return;
+        return if("$1" =~ $ignoreword);
         "stimy_condition($1)";
     }sexg;
     $me{replacement} = $_;
@@ -181,14 +183,15 @@ sub fstatement {
     say $log "fstatement:";
     $_ = substr($me{input},$me{brace_len},$me{parent_index} - $me{brace_len});
     s{
-        ($anyword$sp)$
+       $wordsep($anyword$sp)$
     }{
-        $me{replaced} = "$1" || return;
+        "$1" || return;
+        $me{replaced} = "$1";
         if( $me{replaced} !~ $keyword){
             $me{replaced} .= substr($me{input},$me{parent_index},
                 $me{input_index} - $me{parent_index} + 1);
             $me{replacement} = "stimy_condition($me{replaced})";
-            $me{replaced_index} = $me{brace_len} + $-[0];
+            $me{replaced_index} = $me{brace_len} + $-[1];
             freplace();
             return;
         }
