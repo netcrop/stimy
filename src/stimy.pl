@@ -21,6 +21,7 @@ my $indent = $space x 4;
 my $insertbegin = $lbrace . $nl . $indent . 'stimy_demand();';
 my $insertend = $nl . $indent . 'stimy_reply();' . $nl . $rbrace;
 my $ignoreword ='(?:__typeof__)';
+my $assignmentop = '(?:=|\+=|\-=|\*=|/=|\%=|\<\<=|\>\>=|\&=|\^=|\|=)';
 my $anyword = '(?:[a-zA-Z_][0-9a-zA-Z_\-]*)';
 my $keyword = '(?:return|if|while|for|switch)';
 my $otherword = '(?!return|if|[a-zA-Z_][0-9a-zA-Z_\-]*)';
@@ -30,6 +31,8 @@ my $rparent = ')';
 my $rparentnosemicol = '\)(?!\;)';
 my $begin = '^';
 my $end = '\$';
+my $pi = 0;
+my @path = ();
 my %me = (
     brace_len => 0,
     parent_index => 0,
@@ -141,7 +144,8 @@ sub frbrace {
 }
 sub flparent {
     return if($me{num_brace} < 1);
-    say $log "flparent:$me{num_parent} i:$me{input_index}";
+    say $log "flparent:$pi i:$me{input_index}";
+    @path[$pi++] = $me{input_index};
     $me{parent_index} = $me{input_index} if($me{num_parent} == 0);
     $me{num_parent}++;
 }
@@ -154,12 +158,21 @@ sub frparent {
 
 sub fparenthesis {
     say $log "fparenthesis:"; 
-    for(my $i = $me{input_index} + 1; $i < $me{input_len}; $i++){
+    for(my $i = $me{input_index} + 1; $i < $me{input_len} - 2; $i++){
         $_ = substr($me{input},$i,1);
-        return if(m;$equal;);
         if(m;$nonsp;){
+            $_ = substr($me{input},$i,3);
+            s{
+                ^(
+                   =[^=] |
+                   [\+\-\*%\/\^\|]= |
+                   >>= | <<=
+                )
+            }{
+                "$1" && return; 
+            }sex;
             fstatement();
-            return;    
+            return;
         }
     }
 }

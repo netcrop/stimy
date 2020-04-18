@@ -182,7 +182,7 @@ stimy.lib()
 stimy.install()
 {
     stimy.uninstall
-    [[ -r src/libstimy.so ]] || return
+    stimy.lib
     $cp src/libstimy.so ${libdir}/ &&\
     $chmod u=r,go=r ${libdir}/libstimy.so &&\
     $cp src/stimy.h ${includedir}/ &&\
