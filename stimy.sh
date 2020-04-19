@@ -135,7 +135,6 @@ stimy.target()
         \builtin cd \$targetdir &&\
         for i in \$($find -regextype sed -regex ".*\.c$"|\
             $egrep -v 'stimy.c|config.h|config.def.h');do
-#            $stretch \$i > \$i~
             $stimy \$i > \$i~
             $mv -f \$i~ \$i 
         done
@@ -187,7 +186,8 @@ stimy.install()
     $chmod u=r,go=r ${libdir}/libstimy.so &&\
     $cp src/stimy.h ${includedir}/ &&\
     $chmod u=r,go=r ${includedir}/stimy.h 
-    $sed "s;PERLVERSION;$perl_version;" src/stimy.pl >${bindir}/stimy &&\
+    $sed "s;PERLVERSION;$perl_version;" src/stimy.pl >${bindir}/stimy
+    $sed -i "s;^[[:space:]]*debug.*$;;g" ${bindir}/stimy
     $chmod u=rx,go= ${bindir}/stimy
     $sed "s;PERLVERSION;$perl_version;" src/stretch.pl >${bindir}/stretch &&\
     $chmod u=rx,go= ${bindir}/stretch
