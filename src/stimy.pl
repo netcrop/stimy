@@ -22,7 +22,7 @@ my $insertbegin = $lbrace . $nl . $indent . 'stimy_demand();';
 my $insertend = $nl . $indent . 'stimy_reply();' . $nl . $rbrace;
 my $ignoreword ='(?:__typeof__)';
 my $assignmentop = '(?:=|\+=|\-=|\*=|/=|\%=|\<\<=|\>\>=|\&=|\^=|\|=)';
-my $anyword = '(?:[a-zA-Z_][0-9a-zA-Z_\-]*)';
+my $anyword = '(?:[a-zA-Z][0-9a-zA-Z_\-]*)';
 my $keyword = '(?:return|if|while|for|switch)';
 my $otherword = '(?!return|if|[a-zA-Z_][0-9a-zA-Z_\-]*)';
 my $arguments='(?:[[:alnum:]]|[\_\,\%\\\&\-\(\>\.\*\"\:\[\]]|\s*)+';
@@ -116,7 +116,7 @@ sub return_statement {
     freplace();
 }
 sub freplace {
-#    say $log "freplace: $me{replaced} WITH $me{replacement}";
+    say $log "freplace: $me{replaced} WITH $me{replacement}";
     $me{replaced_len} = length($me{replaced});
     substr($me{input},$me{replaced_index},$me{replaced_len},$me{replacement});
     $me{increment} = length($me{replacement}) - $me{replaced_len};
@@ -149,13 +149,22 @@ sub flparent {
 # End of one statement-block.
 sub frparent {
     return if($me{num_brace} < 1);
-    say $log "frparent:$me{pi} i:$me{input_index}";
+    $_ = substr($me{input},$me{input_index},1);
+    say $log "frparent:$me{pi} i:$me{input_index}: $_";
     fparentlookahead();
     $path[$me{pi}--] = undef;
 }
 sub fparentlookbehind {
-    say $log "fparentlookbehind:"; 
-    $_ = substr($me{input},$me{brace_len},$path[$me{pi}] - $me{brace_len});
+    print $log "fparentlookbehind:"; 
+    for(my $i = $path[$me{pi}] - 1; $i >= 0; $i--){
+        $_ = substr($me{input},$i,1);
+        if(m;$nl;){
+            $me{tmp} = $i + 1;
+            $i = -1;
+        }
+    }
+    $_ = substr($me{input},$me{tmp},$path[$me{pi}] - $me{tmp});
+    say $log $_;
     s{
         $wordsep($anyword$sp)$
     }{
@@ -165,7 +174,7 @@ sub fparentlookbehind {
         $me{replaced} .= substr($me{input},$path[$me{pi}],
             $me{input_index} - $path[$me{pi}]);
         $me{replacement} = "stimy_condition($me{replaced})";
-        $me{replaced_index} = $me{brace_len} + $-[1];
+        $me{replaced_index} = $me{tmp} + $-[1];
         freplace();
     }sex;
 }
