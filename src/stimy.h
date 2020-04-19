@@ -10,12 +10,9 @@
 #ifndef _STDIO_H
 #include <stdio.h>
 #endif
-#define stimy_print(X) \
-do{\
-    fprintf(stimy.fp,"%8d %4d %s %s\n",\
-    stimy.counter++,stimy.index,stimy.space,#X);\
-	X;\
-} while(0)
+#define stimy_conditional(X,Y) \
+    (fprintf(stimy.fp,"%8d %4d %s %s\n",\
+    stimy.counter++,stimy.index,stimy.space,#X) ? (Y) : (Y))
 
 #define stimy_condition(X) \
     (fprintf(stimy.fp,"%8d %4d %s %s\n",\
@@ -34,7 +31,7 @@ do{\
     }else{\
         stimy.space[stimy.index++] = ' ';\
         stimy.space[stimy.index++] = ' ';\
-        	fprintf(stimy.fp,"%8d %4d %s %s %d\n",\
+            fprintf(stimy.fp,"%8d %4d %s %s %d\n",\
             stimy.counter++,stimy.index,stimy.space,__func__,N);\
     }\
 } while(0)

@@ -173,7 +173,7 @@ sub fparentlookbehind {
         return if($me{replaced} =~ $keyword );
         $me{replaced} .= substr($me{input},$path[$me{pi}],
             $me{input_index} - $path[$me{pi}]);
-        $me{replacement} = "stimy_condition($me{replaced})";
+        $me{replacement} = "stimy_conditional($1,$me{replaced})";
         $me{replaced_index} = $me{tmp} + $-[1];
         freplace();
     }sex;
