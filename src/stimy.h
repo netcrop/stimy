@@ -10,13 +10,9 @@
 #ifndef _STDIO_H
 #include <stdio.h>
 #endif
-#define stimy_conditional(X,Y) \
+#define stimy_echo(X,Y) \
     (fprintf(stimy.fp,"%8d %4d %s %s\n",\
     stimy.counter++,stimy.index,stimy.space,#X) ? (Y) : (Y))
-
-#define stimy_condition(X) \
-    (fprintf(stimy.fp,"%8d %4d %s %s\n",\
-    stimy.counter++,stimy.index,stimy.space,#X) ? (X) : (X))
 
 #define stimy_emit(N) \
 do{\
@@ -35,8 +31,8 @@ do{\
             stimy.counter++,stimy.index,stimy.space,__func__,N);\
     }\
 } while(0)
-#define stimy_demand() stimy_emit(0);
-#define stimy_reply(X) do { stimy_emit(1); return X; } while(0)
+#define stimy_pre() stimy_emit(0);
+#define stimy_post(X) do { stimy_emit(1); return X; } while(0)
 enum
 { EXIST = 0, STIMYINSTANS = 9, FILENAMESIZE = 16, SPACEPADD =
     4, SPACESIZE = 80

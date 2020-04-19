@@ -135,9 +135,9 @@ stimy.target()
         \builtin cd \$targetdir &&\
         for i in \$($find -regextype sed -regex ".*\.c$"|\
             $egrep -v 'stimy.c|config.h|config.def.h');do
-            $stretch \$i > \$i~
-            $stimy \$i~ > \$i
-            $rm -f \$i~
+#            $stretch \$i > \$i~
+            $stimy \$i > \$i~
+            $mv -f \$i~ \$i 
         done
     )
     configfile="\$(find \${targetdir} -regextype sed -regex ".*/Makefile.am$")" 
