@@ -128,7 +128,7 @@ sub freplace {
 sub frbrace {
     say $log "frbrace:$me{num_brace}";
     return if(--$me{num_brace} >0);
-    return_statement();
+#    return_statement();
     return if(flookahead());
     $me{replaced} = $rbrace;
     $me{replacement} = $insertend;
@@ -223,6 +223,13 @@ sub run {
     }
 }
 sub postrun {
+    $_ = $me{input};
+    s{
+        return$sp([^;]*)$semicol
+    }{
+        "stimy_reply($1);";
+    }mexg;
+    $me{input} = $_;
     print "$me{preinput}$me{input}";
     close $log;
 }
