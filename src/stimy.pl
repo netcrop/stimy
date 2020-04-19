@@ -31,6 +31,7 @@ my $rparent = ')';
 my $rparentnosemicol = '\)(?!\;)';
 my $begin = '^';
 my $end = '\$';
+# Left-parent index list.
 my @path = ();
 my %me = (
     pi => -1,
