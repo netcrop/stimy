@@ -61,6 +61,7 @@ stimy.squeeze()
         index => 0,
     );
     my %hash=();
+   # Compare with 2 step behind on next loop.
     sub flipindex()
     {
         \$me{index} = 0 if(\$me{index}++ > 0);
@@ -72,17 +73,15 @@ stimy.squeeze()
         \$fun[0] = \$res[0];
         \$fun[1] = \$res[1];
         foreach(@{res}){
-            s{
-                (\$sp)(\$digits)(\$sp)(\$digits)(\$sp)(.*)(\$zeroone)
-            }{
+            if(m;\$sp\$digits\$sp\$digits\$sp(.*)(\$zeroone);){
                 # When Not equal: cmp => 1.
-                if("\$6\$7" cmp \$fun[\$me{index}]){
-                    print \$_;
-                }
-                \$fun[\$me{index}] = "\$6\$7";
-                # flip index means compare with 2 step behind on next loop.
+                print \$_ if("\$1\$2" cmp \$fun[\$me{index}]);
+                \$fun[\$me{index}] = "\$1\$2";
                 flipindex();
-            }msex;
+            }elsif(m;\$sp\$digits\$sp\$digits\$sp(.*);){
+                print \$_ if("\$1" cmp \$fun[\$me{index}]);
+                \$fun[\$me{index}] = "\$1";
+            }
         }
     }
 #    say Dumper(\\%me);
