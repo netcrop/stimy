@@ -110,6 +110,7 @@ sub fnothing { ; }
 sub hash{
     $me{unicode}[$_[0]] = $_[1];
 }
+# Find function definition but not preprocessor.
 sub flookbehind {
     debug("flookbehind:");
     for(my $i = $me{input_index} - 1; $i >= 0; $i--){
@@ -118,8 +119,9 @@ sub flookbehind {
             for(my $j = $i - 1; $j >= 0; $j--){
                 $_ = substr($me{input},$j,1);
                 if(m;$nl;){
-                    $me{tmp} = substr($me{input},$j + 1,10);debug("L$me{tmp}:");
-                    return $me{fundef} = 0 if('#define' cmp $me{tmp});
+                    $me{tmp} = substr($me{input},$j + 1,7);debug("L$me{tmp}:");
+                    return $me{fundef} = 0 if($me{tmp} =~ '#define');
+                    return $me{fundef} = 1;
                 }
             }
             return $me{fundef} = 1; 
@@ -264,7 +266,7 @@ sub prerun()
     }sexg;    # ignore white space, treat as single line
     # Stretch preprocessor.
     s{
-        ($sp[\\][\n]l$sp)
+        ($sp[\\][\n]$sp)
     }{
         $1 && ' ';
     }sexg;
