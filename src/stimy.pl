@@ -69,9 +69,11 @@ my %keyword = (
     register => 'register',
     sizeof => 'sizeof',
     typeof => 'typeof',
+    typedef => 'typedef',
     volatile => 'volatile',
 );
 my %me = (
+    fundef => 0,
     pi => -1,
     tmp => ' ',
     replacement => ' ',
@@ -109,16 +111,26 @@ sub hash{
     $me{unicode}[$_[0]] = $_[1];
 }
 sub flookbehind {
+    debug("flookbehind:");
     for(my $i = $me{input_index} - 1; $i >= 0; $i--){
         $_ = substr($me{input},$i,1);
-        return 0 if(m;[${rparent}];);
-        return 1 if(m;$nonsp;);
+        if(m;[${rparent}];){
+            for(my $j = $i - 1; $j >= 0; $j--){
+                $_ = substr($me{input},$j,1);
+                if(m;$nl;){
+                    $me{tmp} = substr($me{input},$j + 1,10);debug("L$me{tmp}:");
+                    return $me{fundef} = 0 if('#define' cmp $me{tmp});
+                }
+            }
+            return $me{fundef} = 1; 
+        }
+        return $me{fundef} = 0 if(m;$nonsp;);
     }
 }
 sub flbrace {
     debug("flbrace:$me{num_brace}");
     return if(++$me{num_brace} > 1);
-    return if(flookbehind());
+    return if(flookbehind() == 0);
     $me{replaced} = $lbrace;
     $me{replacement} = $insertbegin;
     $me{replaced_index} =$me{input_index}; 
@@ -147,6 +159,7 @@ sub freplace {
 sub frbrace {
     debug("frbrace:$me{num_brace}");
     return if(--$me{num_brace} >0);
+    return if($me{fundef} == 0);
     return if(flookahead());
     $me{replaced} = $rbrace;
     $me{replacement} = $insertend;
@@ -249,6 +262,12 @@ sub prerun()
      }{
          $1 || ' '   # change comments to a single space
     }sexg;    # ignore white space, treat as single line
+    # Stretch preprocessor.
+    s{
+        ($sp[\\][\n]l$sp)
+    }{
+        $1 && ' ';
+    }sexg;
     $me{input} = $_;
     $me{input_len} = length($me{input});
 }
