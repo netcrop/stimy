@@ -23,7 +23,6 @@ my $insertend = $nl . $indent . 'stimy_post();' . $nl . $rbrace;
 my $ignoreword ='(?:__typeof__)';
 my $assignmentop = '(?:=|\+=|\-=|\*=|/=|\%=|\<\<=|\>\>=|\&=|\^=|\|=)';
 my $anyword = '(?:[a-zA-Z][0-9a-zA-Z_\-]*)';
-my $keyword = '(?:return|if|while|for|switch)';
 my $otherword = '(?!return|if|[a-zA-Z_][0-9a-zA-Z_\-]*)';
 my $arguments='(?:[[:alnum:]]|[\_\,\%\\\&\-\(\>\.\*\"\:\[\]]|\s*)+';
 my $lparent = '(';
@@ -33,6 +32,45 @@ my $begin = '^';
 my $end = '\$';
 # Left-parent index list.
 my @path = ();
+my %keyword = (
+    auto => 'auto',
+    char => 'char',   
+    default => 'default',
+    else => 'else',
+    for => 'for',
+    inline => 'inline',
+    return => 'return',
+    static => 'static',
+    union => 'union',
+    while => 'while',
+    _Bool => '_Bool',
+    _Complex => '_Complex',
+    restrict => 'restrict',
+    enum => 'enum',
+    goto => 'goto',
+    int => 'int',
+    short => 'short',
+    struct => 'struct',
+    unsigned => 'unsigned',
+    break => 'break',
+    const => 'const',
+    do => 'do',
+    extern => 'extern',
+    if => 'if',
+    long => 'long',
+    signed => 'signed',
+    switch => 'switch',
+    void => 'void',
+    case => 'case',
+    continue => 'continue',
+    double => 'double',
+    float => 'float',
+    _Imaginary => '_Imaginary',
+    register => 'register',
+    sizeof => 'sizeof',
+    typeof => 'typeof',
+    volatile => 'volatile',
+);
 my %me = (
     pi => -1,
     tmp => ' ',
@@ -144,11 +182,11 @@ sub fparentlookbehind {
     }
     $_ = substr($me{input},$me{tmp},$path[$me{pi}] - $me{tmp});
     s{
-        $wordsep($anyword$sp)$
+        $wordsep($anyword)($sp)$
     }{
         "$1" || return;
-        $me{replaced} = "$1";
-        return if($me{replaced} =~ $keyword );
+        $me{replaced} = "$1$2";
+        return if($keyword{$1});
         $me{replaced} .= substr($me{input},$path[$me{pi}],
             $me{input_index} - $path[$me{pi}]);
         $me{replacement} = "stimy_echo($1,$me{replaced})";
