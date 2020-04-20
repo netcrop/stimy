@@ -186,7 +186,20 @@ stimy.install()
     $cp src/stimy.h ${includedir}/ &&\
     $chmod u=r,go=r ${includedir}/stimy.h 
     $sed "s;PERLVERSION;$perl_version;" src/stimy.pl >${bindir}/stimy
-#    $sed -i "s;^[[:space:]]*debug.*$;;g" ${bindir}/stimy
+    $sed -i "s;^[[:space:]]*debug.*$;;g" ${bindir}/stimy
+    $chmod u=rx,go= ${bindir}/stimy
+    $sed "s;PERLVERSION;$perl_version;" src/stretch.pl >${bindir}/stretch &&\
+    $chmod u=rx,go= ${bindir}/stretch
+}
+stimy.debug()
+{
+    stimy.uninstall
+    stimy.lib
+    $cp src/libstimy.so ${libdir}/ &&\
+    $chmod u=r,go=r ${libdir}/libstimy.so &&\
+    $cp src/stimy.h ${includedir}/ &&\
+    $chmod u=r,go=r ${includedir}/stimy.h 
+    $sed "s;PERLVERSION;$perl_version;" src/stimy.pl >${bindir}/stimy
     $chmod u=rx,go= ${bindir}/stimy
     $sed "s;PERLVERSION;$perl_version;" src/stretch.pl >${bindir}/stretch &&\
     $chmod u=rx,go= ${bindir}/stretch

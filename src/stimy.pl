@@ -4,6 +4,8 @@ use strict;
 use warnings;
 no warnings 'uninitialized';
 # use Data::Dumper;
+my $singlequote = '\'';
+my $doublequote = '"';
 my $equal = '=';
 my $empty = '';
 my $log = undef;
@@ -73,6 +75,8 @@ my %keyword = (
     volatile => 'volatile',
 );
 my %me = (
+    dquote => 0,
+    squote => 0,
     fundef => 0,
     pi => -1,
     tmp => ' ',
@@ -105,32 +109,78 @@ sub nl{
 sub semicol{
     ord($semicol);
 }
+sub singlequote{
+    ord($singlequote);
+}
+sub doublequote{
+    ord($doublequote);
+}
 sub fnothing { ; }
 # Decision table arguments: 0, ASCII character. 1, function pointer.  
 sub hash{
     $me{unicode}[$_[0]] = $_[1];
 }
-# Find function definition but not preprocessor.
+sub fsinglequote {
+    debug("fsinglequote:");
+    if($me{dquote} > 0){
+        debug("1d:$me{dquote},s:$me{squote}");
+        return; 
+    }
+    $_ = substr($me{input},$me{input_index} - 1,3);
+    if(m;[\\]${singlequote};){
+        debug("2d:$me{dquote},s:$me{squote}");
+        return;
+    }
+    if($me{squote} > 0){
+        $me{squote} = 0;
+    }else{
+        $me{squote} = 1;
+    }
+    debug("3d:$me{dquote},s:$me{squote}");
+}
+sub fdoublequote {
+    debug("fdoublequote:");
+    if($me{squote} > 0){
+        debug("1d:$me{dquote},s:$me{squote}");
+        return;
+    }
+    $_ = substr($me{input},$me{input_index} - 1,3);
+    if(m;[\\]${doublequote};){
+        debug("2d:$me{dquote},s:$me{squote}");
+        return;
+    }
+    if($me{dquote} > 0){
+        $me{dquote} = 0;
+    }else{
+        $me{dquote} = 1;
+    }
+    debug("3d:$me{dquote},s:$me{squote}");
+}
+# Find function definition.
 sub flookbehind {
     debug("flookbehind:");
     for(my $i = $me{input_index} - 1; $i >= 0; $i--){
         $_ = substr($me{input},$i,1);
         if(m;[${rparent}];){
+            # Not a preprocessor
             for(my $j = $i - 1; $j >= 0; $j--){
                 $_ = substr($me{input},$j,1);
                 if(m;$nl;){
-                    $me{tmp} = substr($me{input},$j + 1,7);debug("L$me{tmp}:");
+                    $me{tmp} = substr($me{input},$j + 1,7);
+                    debug("L$me{tmp}:");
                     return $me{fundef} = 0 if($me{tmp} =~ '#define');
                     return $me{fundef} = 1;
                 }
             }
             return $me{fundef} = 1; 
         }
+        # Not surrounded by quote.
         return $me{fundef} = 0 if(m;$nonsp;);
     }
 }
 sub flbrace {
-    debug("flbrace:$me{num_brace}");
+    debug("flbrace:$me{num_brace},d:$me{dquote},s:$me{squote}");
+    return if($me{squote} == 1 || $me{dquote} == 1);
     return if(++$me{num_brace} > 1);
     return if(flookbehind() == 0);
     $me{replaced} = $lbrace;
@@ -160,6 +210,7 @@ sub freplace {
 # End of bracket-block.
 sub frbrace {
     debug("frbrace:$me{num_brace}");
+    return if($me{squote} || $me{dquote});
     return if(--$me{num_brace} >0);
     return if($me{fundef} == 0);
     return if(flookahead());
@@ -173,12 +224,14 @@ sub frbrace {
     $me{input_len} += $me{increment};
 }
 sub flparent {
+    return if($me{squote} || $me{dquote});
     return if($me{num_brace} < 1);
     $path[++$me{pi}] = $me{input_index};
     debug("flparent:$me{pi} i:$me{input_index}");
 }
 # End of one statement-block.
 sub frparent {
+    return if($me{squote} || $me{dquote});
     return if($me{num_brace} < 1);
     $_ = substr($me{input},$me{input_index},1);
     debug("frparent:$me{pi} i:$me{input_index}: $_");
@@ -247,6 +300,8 @@ sub run {
     hash(rbrace(),\&frbrace);
     hash(lparent(),\&flparent);
     hash(rparent(),\&frparent);
+    hash(singlequote(),\&fsinglequote);
+    hash(doublequote(),\&fdoublequote);   
     # Execute function to each character inside C source code from Hash table.
     for ($me{input_index} = 0; $me{input_index} < $me{input_len}; $me{input_index}++){
         $me{character} = substr($me{input},$me{input_index},1);
@@ -276,7 +331,7 @@ sub prerun()
 sub postrun {
     $_ = $me{input};
     s{
-        return$sp([^;]*)$semicol
+        ${wordsep}(?:return)${sp}([^;]*)$semicol
     }{
         "stimy_post($1);";
     }mexg;
