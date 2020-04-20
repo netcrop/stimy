@@ -114,8 +114,10 @@ stimy.parser()
 }
 stimy.restore.target()
 {
-    local sourcedir targetdir=\${1:?[target original source dir~.]}
+    local length sourcedir targetdir=\${1:?[target original source dir~.]}
     targetdir=\$($realpath \${targetdir})
+    length=\${#targetdir}
+    [[ "\${targetdir:\$length:1}" == '~' ]] || targetdir="\${targetdir}~" 
     [[ -d \${targetdir} ]] || return
     set -o xtrace
     sourcedir=\${targetdir%%~*}
