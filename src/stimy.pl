@@ -24,7 +24,7 @@ my $insertbegin = $lbrace . $nl . $indent . 'stimy_pre();';
 my $insertend = $nl . $indent . 'stimy_post();' . $nl . $rbrace;
 my $ignoreword ='(?:__typeof__)';
 my $assignmentop = '(?:=|\+=|\-=|\*=|/=|\%=|\<\<=|\>\>=|\&=|\^=|\|=)';
-my $anyword = '(?:[a-zA-Z][0-9a-zA-Z_\-]*)';
+my $anyword = '(?:[a-z][0-9a-zA-Z_\-]*)';
 my $otherword = '(?!return|if|[a-zA-Z_][0-9a-zA-Z_\-]*)';
 my $arguments='(?:[[:alnum:]]|[\_\,\%\\\&\-\(\>\.\*\"\:\[\]]|\s*)+';
 my $lparent = '(';
@@ -35,6 +35,16 @@ my $end = '\$';
 # Left-parent index list.
 my @path = ();
 my %keyword = (
+    error => 'error',
+    pragma => 'pragma',
+    operator => 'operator',
+    elif => 'elif',
+    line => 'line',
+    endif => 'endif',
+    ifdef => 'ifdef',
+    include => 'include',
+    undef => 'undef',
+    defined => 'defined',
     auto => 'auto',
     char => 'char',   
     default => 'default',
@@ -79,7 +89,8 @@ my %me = (
     squote => 0,
     fundef => 0,
     pi => -1,
-    tmp => ' ',
+    headstr => ' ',
+    nexti => 0,
     replacement => ' ',
     logfile => '/tmp/stimy.txt',
     infile => $ARGV[0],
@@ -166,9 +177,9 @@ sub flookbehind {
             for(my $j = $i - 1; $j >= 0; $j--){
                 $_ = substr($me{input},$j,1);
                 if(m;$nl;){
-                    $me{tmp} = substr($me{input},$j + 1,7);
-                    debug("L$me{tmp}:");
-                    return $me{fundef} = 0 if($me{tmp} =~ '#define');
+                    $me{headstr} = substr($me{input},$j + 1,7);
+                    debug("L$me{headstr}:");
+                    return $me{fundef} = 0 if($me{headstr} =~ '#define');
                     return $me{fundef} = 1;
                 }
             }
@@ -236,7 +247,7 @@ sub frparent {
     $_ = substr($me{input},$me{input_index},1);
     debug("frparent:$me{pi} i:$me{input_index}: $_");
     fparentlookahead();
-    $path[$me{pi}--] = undef;
+    $path[$me{pi}--] = 0;
 }
 # Find function names
 sub fparentlookbehind {
@@ -244,11 +255,11 @@ sub fparentlookbehind {
     for(my $i = $path[$me{pi}] - 1; $i >= 0; $i--){
         $_ = substr($me{input},$i,1);
         if(m;$nl;){
-            $me{tmp} = $i + 1;
+            $me{nexti} = $i + 1;
             $i = -1;
         }
     }
-    $_ = substr($me{input},$me{tmp},$path[$me{pi}] - $me{tmp});
+    $_ = substr($me{input},$me{nexti},$path[$me{pi}] - $me{nexti});
     s{
         $wordsep($anyword)($sp)$
     }{
@@ -258,7 +269,7 @@ sub fparentlookbehind {
         $me{replaced} .= substr($me{input},$path[$me{pi}],
             $me{input_index} - $path[$me{pi}]);
         $me{replacement} = "stimy_echo($1,$me{replaced})";
-        $me{replaced_index} = $me{tmp} + $-[1];
+        $me{replaced_index} = $me{nexti} + $-[1];
         freplace();
     }sex;
 }
@@ -316,10 +327,10 @@ sub prerun()
       ((['"]) (?: \. | .)*? \2) | # skip quoted strings
        /\* .*? \*/ |  # delete C comments
        // [^\n\r]*   # delete C++ comments
-     }{
+    }{
          $1 || ' '   # change comments to a single space
     }sexg;    # ignore white space, treat as single line
-    # Stretch preprocessor.
+   # Stretch preprocessor.
     s{
         ($sp[\\][\n]$sp)
     }{

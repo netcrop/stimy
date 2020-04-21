@@ -129,6 +129,8 @@ stimy.target()
 {
     local configfile targetdir=\${1:?[target source dir]}
     targetdir=\$($realpath \${targetdir})
+    length=\${#targetdir}
+    [[ "\${targetdir:\$length:1}" == '~' ]] && targetdir="\${targetdir%%~*}" 
     [[ -d \${targetdir} ]] || return
     (
         $mv \$targetdir \$targetdir~
