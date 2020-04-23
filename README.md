@@ -21,8 +21,8 @@ The install script will pick the latest Perl version from your system.
 ## Using stimy
 ```
 # This command will backup the original [project] as [project~]
-# and insert C preprocessor macros inside each C source file in the newly copied [project].
-> stimy.target [project source dir]
+# and insert C preprocessor macros inside each .[c,h] source file in the newly copied [project].
+> stimy.target [project]
 
 # Build install and run the application as usual.
 > cd [project]
@@ -37,8 +37,8 @@ The install script will pick the latest Perl version from your system.
 ## Examples
 ```
 # Here is a partial run-time call-graph from the [dmenu] application.
-0    6        main 0
-1    6        strcmp
+ 0    6        main 0
+ 1    6        strcmp
 27    6        setlocale
 28    6        XSupportsLocale
 29    6        XOpenDisplay
