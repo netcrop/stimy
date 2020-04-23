@@ -9,7 +9,7 @@ stimy.substitute()
     [dot]='dot'
     [valgrind]='valgrind'
     [stimy]='stimy'
-    [stretch]='stretch'
+    [nocomments]='nocomments'
     [gcc]='gcc'
     )
     cmdlist="${Devlist[@]} $cmdlist"
@@ -108,7 +108,7 @@ stimy.parser()
     local input=\${1:?[input]}
     local trace=\${2:+'-d:Trace'}
     local tmpfile=\$($mktemp)
-    $stretch "\$input" >\$tmpfile
+    $nocomments "\$input" >\$tmpfile
     $stimy "\$tmpfile"
     stimy_delocate
 }
@@ -137,7 +137,7 @@ stimy.target()
         $cp -a \$targetdir~ \$targetdir
         \builtin cd \$targetdir &&\
         for i in \$($find -regextype sed -regex ".*\.[c,h]$"|\
-            $egrep -v 'stimy.c|config.h|config.def.h');do
+            $egrep -v 'stimy.h|stimy.c|config.h|config.def.h');do
             $stimy \$i > \$i~
             $mv -f \$i~ \$i 
         done
@@ -168,7 +168,7 @@ stimy.preprocessor()
 stimy.uninstall()
 {
      $rm -f ${bindir}/stimy
-     $rm -f ${bindir}/stretch
+     $rm -f ${bindir}/nocomments
      $rm -f ${libdir}/libstimy.so
      $rm -f ${includedir}/stimy.h 
 }
@@ -192,8 +192,8 @@ stimy.install()
     $sed "s;PERLVERSION;$perl_version;" src/stimy.pl >${bindir}/stimy
     $sed -i "s;^[[:space:]]*debug.*$;;g" ${bindir}/stimy
     $chmod u=rx,go= ${bindir}/stimy
-    $sed "s;PERLVERSION;$perl_version;" src/stretch.pl >${bindir}/stretch &&\
-    $chmod u=rx,go= ${bindir}/stretch
+    $sed "s;PERLVERSION;$perl_version;" src/nocomments.pl >${bindir}/nocomments &&\
+    $chmod u=rx,go= ${bindir}/nocomments
 }
 stimy.debug()
 {
@@ -205,8 +205,8 @@ stimy.debug()
     $chmod u=r,go=r ${includedir}/stimy.h 
     $sed "s;PERLVERSION;$perl_version;" src/stimy.pl >${bindir}/stimy
     $chmod u=rx,go= ${bindir}/stimy
-    $sed "s;PERLVERSION;$perl_version;" src/stretch.pl >${bindir}/stretch &&\
-    $chmod u=rx,go= ${bindir}/stretch
+    $sed "s;PERLVERSION;$perl_version;" src/nocomments.pl >${bindir}/nocomments &&\
+    $chmod u=rx,go= ${bindir}/nocomments
 }
 stimy.syntax()
 {

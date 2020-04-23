@@ -4,6 +4,8 @@ use strict;
 use warnings;
 no warnings 'uninitialized';
 # use Data::Dumper;
+my $asterisk = '\*';
+my $slash = '/';
 my $singlequote = '\'';
 my $doublequote = '"';
 my $equal = '=';
@@ -85,6 +87,7 @@ my %keyword = (
     volatile => 'volatile',
 );
 my %me = (
+    commenti => -1,
     dquote => 0,
     squote => 0,
     fundef => 0,
@@ -126,18 +129,52 @@ sub singlequote{
 sub doublequote{
     ord($doublequote);
 }
+sub slash{
+    ord($slash);
+}
 sub fnothing { ; }
 # Decision table arguments: 0, ASCII character. 1, function pointer.  
 sub hash{
     $me{unicode}[$_[0]] = $_[1];
 }
+sub fslash {
+    debug("fslash:commenti:$me{commenti}");
+    return if($me{squote} || $me{dquote});
+    # End of Comment.
+    if($me{commenti} >= 0){
+        $_ = substr($me{input},$me{inputi} - 1,1);
+        return if(!m;[\*];);
+        $me{replacedi} = $me{commenti};
+        $me{replaced}=substr($me{input},$me{replacedi},$me{inputi}-$me{replacedi} + 1);
+        $me{replacement} = $space;
+        freplace();
+        $me{commenti} = -1;
+    }
+    $_ = substr($me{input},$me{inputi} + 1,1);
+    # the next char indicate Not Start of the Comment.
+    return if(!m;[\*/];);
+    # the next char indicate Start of the Comment format: '/*'
+    return $me{commenti} = $me{inputi} if(m;[\*];);
+    # loop through the current line to include Comment format: '//'
+    # Do not reposition but only change the length of input.
+    for (my $i = $me{inputi} + 1; $i <= $me{input_len}; $i++){
+        $_ = substr($me{input},$i,1);
+        if(m;$nl;){
+            substr($me{input},$me{inputi},$i - $me{inputi},$space);
+            $me{input_len} -= $i - $me{inputi};
+            $me{commenti} = -1;
+            return;
+        }
+    }
+}
 sub fsinglequote {
     debug("fsinglequote:");
+    return if($me{commenti} >=0);
     if($me{dquote} > 0){
         debug("1d:$me{dquote},s:$me{squote}");
         return; 
     }
-    $_ = substr($me{input},$me{input_index} - 1,3);
+    $_ = substr($me{input},$me{inputi} - 1,3);
     if(m;[\\]${singlequote};){
         debug("2d:$me{dquote},s:$me{squote}");
         return;
@@ -151,11 +188,12 @@ sub fsinglequote {
 }
 sub fdoublequote {
     debug("fdoublequote:");
+    return if($me{commenti} >=0);
     if($me{squote} > 0){
         debug("1d:$me{dquote},s:$me{squote}");
         return;
     }
-    $_ = substr($me{input},$me{input_index} - 1,3);
+    $_ = substr($me{input},$me{inputi} - 1,3);
     if(m;[\\]${doublequote};){
         debug("2d:$me{dquote},s:$me{squote}");
         return;
@@ -170,7 +208,7 @@ sub fdoublequote {
 # Find function definition.
 sub flookbehind {
     debug("flookbehind:");
-    for(my $i = $me{input_index} - 1; $i >= 0; $i--){
+    for(my $i = $me{inputi} - 1; $i >= 0; $i--){
         $_ = substr($me{input},$i,1);
         if(m;[${rparent}];){
             # Not a preprocessor
@@ -185,69 +223,70 @@ sub flookbehind {
             }
             return $me{fundef} = 1; 
         }
-        # Not surrounded by quote.
         return $me{fundef} = 0 if(m;$nonsp;);
     }
 }
 sub flbrace {
     debug("flbrace:$me{num_brace},d:$me{dquote},s:$me{squote}");
-    return if($me{squote} == 1 || $me{dquote} == 1);
+    return if($me{squote} || $me{dquote} || $me{commenti} >=0);
     return if(++$me{num_brace} > 1);
     return if(flookbehind() == 0);
     $me{replaced} = $lbrace;
     $me{replacement} = $insertbegin;
-    $me{replaced_index} =$me{input_index}; 
+    $me{replacedi} =$me{inputi}; 
     $me{replaced_len} = length($me{replaced});
-    substr($me{input},$me{replaced_index},$me{replaced_len},$me{replacement});
+    substr($me{input},$me{replacedi},$me{replaced_len},$me{replacement});
     $me{increment} = length($me{replacement}) - $me{replaced_len};
-    $me{input_index} += $me{increment};
+    $me{inputi} += $me{increment};
     $me{input_len} += $me{increment};
 }
 sub flookahead {
-    for(my $i = $me{input_index} + 1; $i < $me{input_len}; $i++){
+    for(my $i = $me{inputi} + 1; $i < $me{input_len}; $i++){
         $_ = substr($me{input},$i,1);
         return 1 if(m;$nonsp;);
         return 0 if(m;$nl;);
     }
 }
 sub freplace {
-    debug("freplace: $me{replaced} WITH $me{replacement}");
+    debug("freplace: inputi:$me{inputi},inputl:$me{input_len}");
+#    debug("$me{replaced} WITH $me{replacement}");
     $me{replaced_len} = length($me{replaced});
-    substr($me{input},$me{replaced_index},$me{replaced_len},$me{replacement});
+    substr($me{input},$me{replacedi},$me{replaced_len},$me{replacement});
     $me{increment} = length($me{replacement}) - $me{replaced_len};
-    $me{input_index} += $me{increment};
+    $me{inputi} += $me{increment};
     $me{input_len} += $me{increment};
+    debug("inputi:$me{inputi},inputl:$me{input_len}");
 }
 # End of bracket-block.
 sub frbrace {
     debug("frbrace:$me{num_brace}");
-    return if($me{squote} || $me{dquote});
+    return if($me{squote} || $me{dquote} || $me{commenti} >=0);
     return if(--$me{num_brace} >0);
     return if($me{fundef} == 0);
     return if(flookahead());
     $me{replaced} = $rbrace;
     $me{replacement} = $insertend;
-    $me{replaced_index} = $me{input_index}; 
+    $me{replacedi} = $me{inputi}; 
     $me{replaced_len} = length($me{replaced});
-    substr($me{input},$me{replaced_index},$me{replaced_len},$me{replacement});
+    substr($me{input},$me{replacedi},$me{replaced_len},$me{replacement});
     $me{increment} = length($me{replacement}) - $me{replaced_len};
-    $me{input_index} += $me{increment};
+    $me{inputi} += $me{increment};
     $me{input_len} += $me{increment};
 }
 sub flparent {
-    return if($me{squote} || $me{dquote});
+    return if($me{squote} || $me{dquote} || $me{commenti} >=0);
     return if($me{num_brace} < 1);
-    $path[++$me{pi}] = $me{input_index};
-    debug("flparent:$me{pi} i:$me{input_index}");
+    $path[++$me{pi}] = $me{inputi};
+    debug("flparent:$me{pi} i:$me{inputi}");
 }
 # End of one statement-block.
 sub frparent {
-    return if($me{squote} || $me{dquote});
+    return if($me{squote} || $me{dquote} || $me{commenti} >=0);
     return if($me{num_brace} < 1);
-    $_ = substr($me{input},$me{input_index},1);
-    debug("frparent:$me{pi} i:$me{input_index}: $_");
+    $_ = substr($me{input},$me{inputi},1);
+    debug("frparent:$me{pi} i:$me{inputi}: $_");
     fparentlookahead();
-    $path[$me{pi}--] = 0;
+    $path[$me{pi}--] = 0 if($me{pi} >=0);
 }
 # Find function names
 sub fparentlookbehind {
@@ -267,16 +306,16 @@ sub fparentlookbehind {
         $me{replaced} = "$1$2";
         return if($keyword{$1});
         $me{replaced} .= substr($me{input},$path[$me{pi}],
-            $me{input_index} - $path[$me{pi}]);
+            $me{inputi} - $path[$me{pi}]);
         $me{replacement} = "stimy_echo($1,$me{replaced})";
-        $me{replaced_index} = $me{nexti} + $-[1];
+        $me{replacedi} = $me{nexti} + $-[1];
         freplace();
     }sex;
 }
 # Ignore all assignment operators.
 sub fparentlookahead {
     debug("fparentlookahead:"); 
-    for(my $i = $me{input_index} + 1; $i < $me{input_len} - 3; $i++){
+    for(my $i = $me{inputi} + 1; $i < $me{input_len} - 3; $i++){
         $_ = substr($me{input},$i,1);
         if(m;$nonsp;){
             $_ = substr($me{input},$i,3);
@@ -313,9 +352,10 @@ sub run {
     hash(rparent(),\&frparent);
     hash(singlequote(),\&fsinglequote);
     hash(doublequote(),\&fdoublequote);   
+    hash(slash(),\&fslash);
     # Execute function to each character inside C source code from Hash table.
-    for ($me{input_index} = 0; $me{input_index} < $me{input_len}; $me{input_index}++){
-        $me{character} = substr($me{input},$me{input_index},1);
+    for ($me{inputi} = 0; $me{inputi} < $me{input_len}; $me{inputi}++){
+        $me{character} = substr($me{input},$me{inputi},1);
         $me{unicode}[ord($me{character})]();
     }
 }
@@ -323,14 +363,14 @@ sub prerun()
 {
     debug("prerun:");
     $_ = $me{input};
-    s{
-      ((['"]) (?: \. | .)*? \2) | # skip quoted strings
-       /\* .*? \*/ |  # delete C comments
-       // [^\n\r]*   # delete C++ comments
-    }{
-         $1 || ' '   # change comments to a single space
-    }sexg;    # ignore white space, treat as single line
-   # Stretch preprocessor.
+#    s{
+#      ((['"]) (?: \. | .)*? \2) | # skip quoted strings
+#       /\* .*? \*/ |  # delete C comments
+#       // [^\n\r]*   # delete C++ comments
+#    }{
+#         $1 || ' '   # change comments to a single space
+#    }sexg;    # ignore white space, treat as single line
+   # Stretch lines.
     s{
         ($sp[\\][\n]$sp)
     }{
