@@ -1,7 +1,7 @@
 stimy.substitute()
 {
     local reslist devlist libdir includedir bindir cmd i perl_version \
-    vendor_perl \
+    vendor_perl testdir \
     cmdlist='dirname basename cat ls mv sudo cp chmod ln chown rm touch
     head mkdir perl mktemp shred egrep make sed realpath find less'
 
@@ -11,6 +11,7 @@ stimy.substitute()
     [stimy]='stimy'
     [nocomments]='nocomments'
     [gcc]='gcc'
+    [diff]='diff'
     )
     cmdlist="${Devlist[@]} $cmdlist"
     for cmd in $cmdlist;do
@@ -39,9 +40,80 @@ stimy.substitute()
     libdir=/usr/local/lib
     includedir=/usr/local/include/
     bindir=/usr/local/bin/
-
+    testdir=test/
     \builtin source <($cat<<-EOF
 
+stimy.difflog()
+{
+    declare -a Tests=(
+    ${testdir}/misc.h
+    ${testdir}/quote.h
+    ${testdir}/comments.h
+    ${testdir}/definition.h
+    )
+    local i
+    for i in \${Tests[@]};do
+        $stimy \${i} >/dev/null
+        $diff /tmp/stimy.log \${i/.h/.log}
+    done
+}
+stimy.funcall()
+{
+    local input=\${1:?[C source/header file]}   
+    [[ -r "\${input}" ]] || return
+    $perl - "\${input}" <<-'CFUN'
+    use $perl_version;
+    use strict;
+    my \$input = \$ARGV[0];
+    my \$sp = '\s*';
+    my \$semicol = ';';
+    my \$lparent = '\(';
+    my \$rparent ='\)';
+    my \$lbrace = '\{';
+    my \$space = ' ';
+    my \$nl = '\n';
+    my \$nonkeyword = '(?!return|if|while|for|switch)(?:[a-zA-Z_][0-9a-zA-Z_]*)';
+    open(INPUT, '<', "\${input}") 
+    or die "Cann't open file: \${input}";
+    {
+        local \$/ = undef;
+        \$_ = <INPUT>;
+        s{
+            \$sp(\$nonkeyword\$lparent\$rparent)\$sp\$lbrace
+        }{
+            say "\$1;";
+        }sexg;
+    }
+CFUN
+}
+stimy.make()
+{
+    (
+        \builtin cd test/
+        $make clean && $make && ./verify
+        $make clean
+    )
+}
+stimy.syntax()
+{
+    local file=\${1:?[include header file]}
+    local filename=\${file##*/}
+    [[ -r \${file} ]] || return
+    declare -a Fun=(\$(stimy.funcall \${file}))
+    $mv ${testdir}/verify.c ${testdir}/verify.c~
+    $cat <<-CSYNTAX > ${testdir}/verify.c
+#include <stdio.h>
+#include "\${filename}"
+int main()
+{
+    \${Fun[@]}
+    fprintf(stdout,"%s\n","main");
+    return 0;
+}
+CSYNTAX
+    stimy.make
+    $mv ${testdir}/verify.c~ ${testdir}/verify.c
+}
 stimy.squeeze()
 {
     local input=\${1:?[input file]}
@@ -207,12 +279,6 @@ stimy.debug()
     $chmod u=rx,go= ${bindir}/stimy
     $sed "s;PERLVERSION;$perl_version;" src/nocomments.pl >${bindir}/nocomments &&\
     $chmod u=rx,go= ${bindir}/nocomments
-}
-stimy.syntax()
-{
-    (
-        \builtin \cd test/ && $make && ./verify
-    )
 }
 stimy.test()
 {
