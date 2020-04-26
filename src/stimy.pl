@@ -110,6 +110,12 @@ my %me = (
 sub debug{
     say $log "$_[0]";
 }
+sub tab{
+    ord($tab);
+}
+sub space{
+    ord($space);
+}
 sub sharp{
     ord($sharp);
 }
@@ -143,7 +149,13 @@ sub slash{
 sub backslash{
     ord($backslash);
 }
-sub fnothing { ; }
+sub fnothing {
+    return if(!$me{fundef} || $me{preprocessor} || $me{squote}
+         || $me{dquote} || $me{comment});
+    ffundef();
+}
+sub fspace {;}
+sub ftab {;}
 # Decision table arguments: 0, ASCII character. 1, function pointer.  
 sub hash {
     $me{unicode}[$_[0]] = $_[1];
@@ -193,6 +205,7 @@ sub fslash {
 sub fsinglequote {
     return if($me{dquote} || $me{comment} || $me{preprocessor});
     debug("fsinglequote:");
+    ffundef() if($me{fundef});
     # Flip the indicator.
     return $me{squote} = 0 if($me{squote});
     $me{squote} = 1;
@@ -200,6 +213,7 @@ sub fsinglequote {
 sub fdoublequote {
     return if($me{squote} || $me{comment} || $me{preprocessor});
     debug("fdoublequote:");
+    ffundef() if($me{fundef});
     # Flip the indicator.
     return $me{dquote} = 0 if($me{dquote});
     $me{dquote} = 1;
@@ -208,6 +222,7 @@ sub flbrace {
     return if($me{squote} || $me{dquote} || $me{comment}
          || $me{preprocessor} || !$me{rparent});
     debug("flbrace:");
+    ffundef() if($me{fundef});
     return if(++$me{num_brace} > 1);
     $me{lbrace} = 1; 
 }
@@ -215,11 +230,13 @@ sub frbrace {
     return if($me{squote} || $me{dquote} || $me{comment}
          || $me{preprocessor} || !$me{lbrace});
     debug("frbrace:");
+    ffundef() if($me{fundef});
     return if(--$me{num_brace} >0);
 }
 sub flparent {
     return if($me{squote} || $me{dquote} || $me{comment} || $me{preprocessor});
     debug("flparent:");
+    ffundef() if($me{fundef});
     return if($me{num_brace} < 1);
     $path[++$me{pi}] = $me{inputi};
     debug("pi:$me{pi}");
@@ -227,11 +244,18 @@ sub flparent {
 sub frparent {
     return if($me{squote} || $me{dquote} || $me{comment} || $me{preprocessor});
     debug("frparent:");
+    ffundef() if($me{fundef});
     # Possible function definition.
     return $me{rparent} = 1 if($me{num_brace} < 1);
     $_ = substr($me{input},$me{inputi},1);
     $path[$me{pi}--] = 0 if($me{pi} >=0);
     debug("pi:$me{pi}");
+    $me{fundef} = 1;
+}
+sub ffundef {
+    $_ = substr($me{input},$me{inputi},1);
+    debug("ffundef:$_");
+    $me{fundef} = 0;
 }
 sub openfile {
     open($log, '>', "$me{logfile}") or die "Cann't open file: $me{logfile}. $!";
@@ -246,6 +270,8 @@ sub run {
         hash($i,\&fnothing);
     }
     # Prepare specific ASCII => function name decision.
+    hash(space(),\&fspace);
+    hash(tab(),\&ftab);
     hash(lparent(),\&flparent);
     hash(rparent(),\&frparent);
     hash(lbrace(),\&flbrace);

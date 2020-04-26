@@ -1,6 +1,7 @@
-enum { A=1 };
+#define A(X) (X)
 int definition()
 {
-    printf("%s\n","def");
+    if( /* comments */ A(0) /* comments */
+         == (1));
     return 1;
 }

@@ -54,7 +54,8 @@ stimy.difflog()
     local i
     for i in \${Tests[@]};do
         $stimy \${i} >/dev/null
-        $diff /tmp/stimy.log \${i/.h/.log}
+        $diff /tmp/stimy.log \${i/.h/.log} ||\
+        \builtin echo "Diff: \${i/.h/.log}"
     done
 }
 stimy.funcall()
