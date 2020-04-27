@@ -41,8 +41,17 @@ stimy.substitute()
     includedir=/usr/local/include/
     bindir=/usr/local/bin/
     testdir=test/
+    logfile=/tmp/stimy.log
     \builtin source <($cat<<-EOF
 
+stimy.test()
+{
+    local testfile=\${1:?[test header file]}
+    [[ -r \${testfile} ]] || return
+    stimy.debug
+    $stimy \${testfile} >>$logfile 
+    $less $logfile
+}
 stimy.difflog()
 {
     declare -a Tests=(
@@ -54,8 +63,7 @@ stimy.difflog()
     local i
     for i in \${Tests[@]};do
         $stimy \${i} >/dev/null
-        $diff /tmp/stimy.log \${i/.h/.log} ||\
-        \builtin echo "Diff: \${i/.h/.log}"
+        $diff -c /tmp/stimy.log \${i/.h/.log}
     done
 }
 stimy.funcall()
@@ -281,11 +289,9 @@ stimy.debug()
     $sed "s;PERLVERSION;$perl_version;" src/nocomments.pl >${bindir}/nocomments &&\
     $chmod u=rx,go= ${bindir}/nocomments
 }
-stimy.test()
+stimy.verify()
 {
-    stimy.lib
     stimy.install
-    stimy.restore.target test~/
     stimy.target test/
     (
         \builtin \cd test/ && $make &&\

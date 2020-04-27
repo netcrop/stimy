@@ -3,7 +3,7 @@ use PERLVERSION;
 use strict;
 use warnings;
 no warnings 'uninitialized';
-# use Data::Dumper;
+use Data::Dumper;
 my $sharp = '#';
 my $asterisk = '\*';
 my $slash = '/';
@@ -37,7 +37,9 @@ my $rparentnosemicol = '\)(?!\;)';
 my $begin = '^';
 my $end = '\$';
 # Left-parent index list.
-my @path = ();
+my @pparent = ();
+# Comment start and end position list.
+my @pcomment = ();
 my %keyword = (
     error => 'error',
     pragma => 'pragma',
@@ -89,14 +91,15 @@ my %keyword = (
     volatile => 'volatile',
 );
 my %me = (
+    newlinei => 0,
     preprocessor => 0,
     inputi => -1,
     comment => 0,
     dquote => 0,
     squote => 0,
     rparent => 0,
-    fundef => 0,
-    pi => -1,
+    lookahead => 0,
+    pparenti => -1,
     headstr => ' ',
     nexti => 0,
     replacement => ' ',
@@ -150,9 +153,9 @@ sub backslash{
     ord($backslash);
 }
 sub fnothing {
-    return if(!$me{fundef} || $me{preprocessor} || $me{squote}
-         || $me{dquote} || $me{comment});
-    ffundef();
+    return if(!$me{lookahead} || $me{preprocessor}
+         || $me{squote} || $me{dquote} || $me{comment});
+    flookahead();
 }
 sub fspace {;}
 sub ftab {;}
@@ -162,50 +165,67 @@ sub hash {
 }
 sub fbackslash {
     debug("fbackslash:");
-    $me{inputi}++ if($me{inputi} < $me{input_len});
+    $me{inputi}++;
 }
 sub fnl {
+    return if($me{squote} || $me{dquote});
     debug("fnl:");
     # End of Comment format: '//'
-    $me{comment} = 0 if($me{comment});
-    $me{preprocessor} = 0 if($me{preprocessor});
+    if($me{comment}){
+        debug("end comment 2:");
+        $me{comment} = 0; 
+        # Append
+        $pcomment[1] = $me{inputi};
+    }
+    if($me{preprocessor}){
+        debug("end preprocessor.");
+        $me{preprocessor} = 0;
+    }
     hash(nl(),\&fnothing);
+    $me{newlinei} = $me{inputi} ;
 }
 sub fsharp {
     return if($me{preprocessor} || $me{squote} || $me{dquote} || $me{comment});
-    debug("fsharp:");
+    debug("fsharp: start preprocessor.");
     $me{preprocessor} = 1;
     hash(nl(),\&fnl);
 }
 sub fslash {
     return if($me{squote} || $me{dquote} || $me{preprocessor});
-    debug("fslash:");
     # End of Comment format: '*/'.
     if($me{comment}){
+        debug("fslash: end comment 1.");
         $_ = substr($me{input},$me{inputi} - 1,1);
         return if(!m;$asterisk;);
         $me{comment} = 0;
+        # Append
+        $pcomment[1] = $me{inputi};
         hash(nl(),\&fnl);
         return;
     }
     $_ = substr($me{input},$me{inputi} + 1,1);
     #  Start of the Comment format: '/*'
+    return if(!m;$asterisk|$slash;);
     if(m;$asterisk;){
-        $me{comment} = 1;
+        debug("fslash: start comment 1.");
         hash(nl(),\&fnothing);
-        return;
-    }
-    # Start of Comment format: '//'
-    if(m;$slash;){
-        $me{comment} = 1;
+    }else{
+        # Start of Comment format: '//'
+        debug("fslash: start comment 2.");
         hash(nl(),\&fnl);
-        return;
+    }
+    $me{comment} = 1;
+    $me{inputi}++;
+    $_ = substr($me{input},$pcomment[1] + 1,$me{inputi} - $pcomment[1] - 1);
+    if(m;$nonsp;){
+#        debug(":$_:");
+        return $pcomment[0] = $me{inputi}; 
     }
 }
 sub fsinglequote {
     return if($me{dquote} || $me{comment} || $me{preprocessor});
     debug("fsinglequote:");
-    ffundef() if($me{fundef});
+    flookahead() if($me{lookahead});
     # Flip the indicator.
     return $me{squote} = 0 if($me{squote});
     $me{squote} = 1;
@@ -213,7 +233,7 @@ sub fsinglequote {
 sub fdoublequote {
     return if($me{squote} || $me{comment} || $me{preprocessor});
     debug("fdoublequote:");
-    ffundef() if($me{fundef});
+    flookahead() if($me{lookahead});
     # Flip the indicator.
     return $me{dquote} = 0 if($me{dquote});
     $me{dquote} = 1;
@@ -222,7 +242,7 @@ sub flbrace {
     return if($me{squote} || $me{dquote} || $me{comment}
          || $me{preprocessor} || !$me{rparent});
     debug("flbrace:");
-    ffundef() if($me{fundef});
+    flookahead() if($me{lookahead});
     return if(++$me{num_brace} > 1);
     $me{lbrace} = 1; 
 }
@@ -230,32 +250,46 @@ sub frbrace {
     return if($me{squote} || $me{dquote} || $me{comment}
          || $me{preprocessor} || !$me{lbrace});
     debug("frbrace:");
-    ffundef() if($me{fundef});
+    flookahead() if($me{lookahead});
     return if(--$me{num_brace} >0);
 }
 sub flparent {
     return if($me{squote} || $me{dquote} || $me{comment} || $me{preprocessor});
     debug("flparent:");
-    ffundef() if($me{fundef});
+    flookahead() if($me{lookahead});
     return if($me{num_brace} < 1);
-    $path[++$me{pi}] = $me{inputi};
-    debug("pi:$me{pi}");
+    $pparent[++$me{pparenti}] = $me{inputi};
+    debug("pparenti:$me{pparenti}");
 }
 sub frparent {
     return if($me{squote} || $me{dquote} || $me{comment} || $me{preprocessor});
     debug("frparent:");
-    ffundef() if($me{fundef});
+    flookahead() if($me{lookahead});
     # Possible function definition.
     return $me{rparent} = 1 if($me{num_brace} < 1);
-    $_ = substr($me{input},$me{inputi},1);
-    $path[$me{pi}--] = 0 if($me{pi} >=0);
-    debug("pi:$me{pi}");
-    $me{fundef} = 1;
+    flookbehind();
+    $me{lookahead} = 1;
+    $pparent[$me{pparenti}--] = 0 if($me{pparenti} >=0);
+    debug("pparenti:$me{pparenti}");
 }
-sub ffundef {
+sub flookbehind {
     $_ = substr($me{input},$me{inputi},1);
-    debug("ffundef:$_");
-    $me{fundef} = 0;
+    debug("flookbehind:$_");
+}
+sub flookahead {
+    $_ = substr($me{input},$me{inputi},1);
+    debug("flookahead:$_");
+    $me{lookahead} = 0;
+    $_ = substr($me{input},$me{inputi},3);
+    s{
+        ^(
+           =[^=] |
+           [\+\-\*%\/\^\|]= |
+           >>= | <<=
+        )
+    }{
+        "$1" && return;
+    }sex;
 }
 sub openfile {
     open($log, '>', "$me{logfile}") or die "Cann't open file: $me{logfile}. $!";
@@ -281,13 +315,14 @@ sub run {
     hash(slash(),\&fslash);
     hash(sharp(),\&fsharp);
     hash(backslash(),\&fbackslash);
-    # Indirect function call based on previous prepared hash table.
+    # Indirect function lookahead based on previous prepared hash table.
     while (++$me{inputi} < $me{input_len}){
         $me{unicode}[ord(substr($me{input},$me{inputi},1))]();
     }
 }
 sub postrun()
 {
+    debug("=====================");
     print "$me{input}";
     close $log;
 }
@@ -295,3 +330,4 @@ openfile();
 run();
 postrun();
 #say Dumper(\%me);
+#say Dumper(\@pcomment);

@@ -1,7 +1,10 @@
-fsharp:
+fsharp: start preprocessor.
 fbackslash:
 fbackslash:
 fbackslash:
 fnl:
-fsharp:
+end preprocessor.
+fsharp: start preprocessor.
 fnl:
+end preprocessor.
+=====================
