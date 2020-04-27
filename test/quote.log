@@ -5,7 +5,7 @@ flparent:
 frparent:
 flbrace:
 flparent:
-pparenti:0
+size:1
 fdoublequote:
 fbackslash:
 fdoublequote:
@@ -13,10 +13,10 @@ fsinglequote:
 fsinglequote:
 frparent:
 flookbehind:)
-pparenti:-1
+size:0
 flookahead:;
 flparent:
-pparenti:0
+size:1
 fdoublequote:
 fbackslash:
 fdoublequote:
@@ -24,10 +24,10 @@ fdoublequote:
 fdoublequote:
 frparent:
 flookbehind:)
-pparenti:-1
+size:0
 flookahead:;
 flparent:
-pparenti:0
+size:1
 fdoublequote:
 fbackslash:
 fdoublequote:
@@ -35,7 +35,7 @@ fdoublequote:
 fdoublequote:
 frparent:
 flookbehind:)
-pparenti:-1
+size:0
 flookahead:;
 frbrace:
 =====================

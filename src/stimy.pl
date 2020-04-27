@@ -13,7 +13,7 @@ my $doublequote = '"';
 my $equal = '=';
 my $empty = '';
 my $log = undef;
-my $sp = '\s*';
+my $sp = '\s';
 my $nonsp = '\S';
 my $tab = '\t';
 my $lbrace = '{';
@@ -39,7 +39,7 @@ my $end = '\$';
 # Left-parent index list.
 my @pparent = ();
 # Comment start and end position list.
-my @pcomment = ();
+my @pcomment = (0,0);
 my %keyword = (
     error => 'error',
     pragma => 'pragma',
@@ -91,7 +91,6 @@ my %keyword = (
     volatile => 'volatile',
 );
 my %me = (
-    newlinei => 0,
     preprocessor => 0,
     inputi => -1,
     comment => 0,
@@ -99,8 +98,7 @@ my %me = (
     squote => 0,
     rparent => 0,
     lookahead => 0,
-    pparenti => -1,
-    headstr => ' ',
+    pattern => ' ',
     nexti => 0,
     replacement => ' ',
     logfile => '/tmp/stimy.log',
@@ -155,7 +153,6 @@ sub backslash{
 sub fnothing {
     return if(!$me{lookahead} || $me{preprocessor}
          || $me{squote} || $me{dquote} || $me{comment});
-    flookahead();
 }
 sub fspace {;}
 sub ftab {;}
@@ -182,7 +179,6 @@ sub fnl {
         $me{preprocessor} = 0;
     }
     hash(nl(),\&fnothing);
-    $me{newlinei} = $me{inputi} ;
 }
 sub fsharp {
     return if($me{preprocessor} || $me{squote} || $me{dquote} || $me{comment});
@@ -216,16 +212,17 @@ sub fslash {
     }
     $me{comment} = 1;
     $me{inputi}++;
-    $_ = substr($me{input},$pcomment[1] + 1,$me{inputi} - $pcomment[1] - 1);
+    # String between Comments.
+    $_ = substr($me{input},$pcomment[1] + 1,$me{inputi} - $pcomment[1] - 2);
+    # debug(":$_:");
+    # Non consecutive Comments.
     if(m;$nonsp;){
-#        debug(":$_:");
         return $pcomment[0] = $me{inputi}; 
     }
 }
 sub fsinglequote {
     return if($me{dquote} || $me{comment} || $me{preprocessor});
     debug("fsinglequote:");
-    flookahead() if($me{lookahead});
     # Flip the indicator.
     return $me{squote} = 0 if($me{squote});
     $me{squote} = 1;
@@ -233,7 +230,6 @@ sub fsinglequote {
 sub fdoublequote {
     return if($me{squote} || $me{comment} || $me{preprocessor});
     debug("fdoublequote:");
-    flookahead() if($me{lookahead});
     # Flip the indicator.
     return $me{dquote} = 0 if($me{dquote});
     $me{dquote} = 1;
@@ -242,7 +238,6 @@ sub flbrace {
     return if($me{squote} || $me{dquote} || $me{comment}
          || $me{preprocessor} || !$me{rparent});
     debug("flbrace:");
-    flookahead() if($me{lookahead});
     return if(++$me{num_brace} > 1);
     $me{lbrace} = 1; 
 }
@@ -250,31 +245,54 @@ sub frbrace {
     return if($me{squote} || $me{dquote} || $me{comment}
          || $me{preprocessor} || !$me{lbrace});
     debug("frbrace:");
-    flookahead() if($me{lookahead});
     return if(--$me{num_brace} >0);
 }
 sub flparent {
     return if($me{squote} || $me{dquote} || $me{comment} || $me{preprocessor});
     debug("flparent:");
-    flookahead() if($me{lookahead});
     return if($me{num_brace} < 1);
-    $pparent[++$me{pparenti}] = $me{inputi};
-    debug("pparenti:$me{pparenti}");
+    push(@pparent,$me{inputi});
+    debug("size:" . scalar(@pparent));
 }
 sub frparent {
     return if($me{squote} || $me{dquote} || $me{comment} || $me{preprocessor});
     debug("frparent:");
-    flookahead() if($me{lookahead});
     # Possible function definition.
     return $me{rparent} = 1 if($me{num_brace} < 1);
     flookbehind();
-    $me{lookahead} = 1;
-    $pparent[$me{pparenti}--] = 0 if($me{pparenti} >=0);
-    debug("pparenti:$me{pparenti}");
+    pop(@pparent);
+    debug("size:" . scalar(@pparent));
+}
+sub foneline {
+    for (;$me{i} > 0;$me{i}--){
+        $_ = substr($me{input},$me{i},1);
+        next if(m;$me{pattern};);
+        $me{pattern} = $nonsp;
+        last if(m;$sp;);
+    }
 }
 sub flookbehind {
     $_ = substr($me{input},$me{inputi},1);
     debug("flookbehind:$_");
+    $me{pattern} = $sp;
+    if($pcomment[1] < $pparent[-1]){
+        $me{i} = $pcomment[1] + 1;
+        $_ = substr($me{input},$me{i},$pparent[-1] - $me{i});
+        if(m;$nonsp;){
+            debug("$me{i}:$_:$pparent[-1]");
+            return;
+        }
+        $me{i} = $pcomment[0] - 1; 
+        foneline();
+        $_ = substr($me{input},$me{i} - 1,$pcomment[0] - $me{i});
+        debug("$me{i}:$_:$pcomment[0]");
+        return;
+    }
+    $me{i} = $pparent[-1] - 1;
+    foneline();
+    $_ = substr($me{input},$me{i} + 1,$pparent[-1] - $me{i} - 1);
+    debug("$me{i}:$_:$pparent[-1]");
+    $me{lookahead} = 1;
 }
 sub flookahead {
     $_ = substr($me{input},$me{inputi},1);
