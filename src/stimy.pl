@@ -13,8 +13,8 @@ my $doublequote = '"';
 my $equal = '=';
 my $empty = '';
 my $log = undef;
-my $sp = '\s';
-my $nonsp = '\S';
+my $sp = '[ \t\v\n\f]';
+my $nonsp = '[^ \t\v\n\f]';
 my $tab = '\t';
 my $lbrace = '{';
 my $rbrace = '}';
@@ -22,12 +22,14 @@ my $col = ':';
 my $space = ' ';
 my $semicol = ';';
 my $nl = "\n";
-my $wordsep = '(?:[ \t\n!\(\;])';
 my $indent = $space x 4;
 my $insertbegin = $lbrace . $nl . $indent . 'stimy_pre();';
 my $insertend = $nl . $indent . 'stimy_post();' . $nl . $rbrace;
 my $ignoreword ='(?:__typeof__)';
 my $assignmentop = '(?:=|\+=|\-=|\*=|/=|\%=|\<\<=|\>\>=|\&=|\^=|\|=)';
+my $alpha = '[0-9a-zA-Z_\-]';
+my $nonalpha = '[^0-9a-zA-Z_\-]';
+my $wordsep = '(?:[ \t\n!\(\;=])';
 my $anyword = '(?:[a-z][0-9a-zA-Z_\-]*)';
 my $otherword = '(?!return|if|[a-zA-Z_][0-9a-zA-Z_\-]*)';
 my $arguments='(?:[[:alnum:]]|[\_\,\%\\\&\-\(\>\.\*\"\:\[\]]|\s*)+';
@@ -91,12 +93,15 @@ my %keyword = (
     volatile => 'volatile',
 );
 my %me = (
+    rparenti => 0,
+    headi => 0,
+    taili => 0,
     preprocessor => 0,
     inputi => -1,
     comment => 0,
     dquote => 0,
     squote => 0,
-    rparent => 0,
+    fundef => 0,
     lookahead => 0,
     pattern => ' ',
     nexti => 0,
@@ -151,8 +156,8 @@ sub backslash{
     ord($backslash);
 }
 sub fnothing {
-    return if(!$me{lookahead} || $me{preprocessor}
-         || $me{squote} || $me{dquote} || $me{comment});
+    return if($me{preprocessor} || $me{squote} || $me{dquote} || $me{comment});
+    flookahead() if($me{lookahead});
 }
 sub fspace {;}
 sub ftab {;}
@@ -214,11 +219,9 @@ sub fslash {
     $me{inputi}++;
     # String between Comments.
     $_ = substr($me{input},$pcomment[1] + 1,$me{inputi} - $pcomment[1] - 2);
-    # debug(":$_:");
+    return if(m;^$sp*$;);
     # Non consecutive Comments.
-    if(m;$nonsp;){
-        return $pcomment[0] = $me{inputi}; 
-    }
+    $pcomment[0] = $me{inputi} - 1; 
 }
 sub fsinglequote {
     return if($me{dquote} || $me{comment} || $me{preprocessor});
@@ -235,8 +238,9 @@ sub fdoublequote {
     $me{dquote} = 1;
 }
 sub flbrace {
+    # Counting brace is noly valid inside function definition.
     return if($me{squote} || $me{dquote} || $me{comment}
-         || $me{preprocessor} || !$me{rparent});
+         || $me{preprocessor} || !$me{fundef});
     debug("flbrace:");
     return if(++$me{num_brace} > 1);
     $me{lbrace} = 1; 
@@ -258,40 +262,48 @@ sub frparent {
     return if($me{squote} || $me{dquote} || $me{comment} || $me{preprocessor});
     debug("frparent:");
     # Possible function definition.
-    return $me{rparent} = 1 if($me{num_brace} < 1);
+    return $me{fundef} = 1 if($me{num_brace} < 1);
+    flookahead() if($me{lookahead});
+    $me{rparenti} = $me{inputi};
     flookbehind();
     pop(@pparent);
     debug("size:" . scalar(@pparent));
 }
-sub foneline {
-    for (;$me{i} > 0;$me{i}--){
-        $_ = substr($me{input},$me{i},1);
-        next if(m;$me{pattern};);
-        $me{pattern} = $nonsp;
-        last if(m;$sp;);
-    }
-}
 sub flookbehind {
     $_ = substr($me{input},$me{inputi},1);
     debug("flookbehind:$_");
-    $me{pattern} = $sp;
-    if($pcomment[1] < $pparent[-1]){
-        $me{i} = $pcomment[1] + 1;
-        $_ = substr($me{input},$me{i},$pparent[-1] - $me{i});
-        if(m;$nonsp;){
-            debug("$me{i}:$_:$pparent[-1]");
-            return;
-        }
-        $me{i} = $pcomment[0] - 1; 
+    if($pcomment[1] > $pparent[-1]){
+        $me{i} = $pparent[-1] - 1;
         foneline();
-        $_ = substr($me{input},$me{i} - 1,$pcomment[0] - $me{i});
-        debug("$me{i}:$_:$pcomment[0]");
         return;
     }
-    $me{i} = $pparent[-1] - 1;
+    $me{i} = $pcomment[1] + 1;
+    $_ = substr($me{input},$me{i},$pparent[-1] - $me{i});
+    if(m;$nonsp;){
+        $me{i} = $pparent[-1] - 1; 
+    }else{
+        $me{i} = $pcomment[0] - 1; 
+    }
     foneline();
-    $_ = substr($me{input},$me{i} + 1,$pparent[-1] - $me{i} - 1);
-    debug("$me{i}:$_:$pparent[-1]");
+}
+sub foneline {
+    debug("foneline:");
+    $me{pattern} = $sp;
+    for (;$me{i} > 0;$me{i}--){
+        $_ = substr($me{input},$me{i},1);
+        #debug(":$_:");
+        next if(m;$me{pattern};);
+        if(m;$sp;){
+            $me{headi} = $me{i} + 1;
+            last; 
+        }
+        $me{pattern} = $nonsp;
+        $me{taili} = $me{i};
+    }
+    $_ = substr($me{input},$me{headi},$me{taili} - $me{i}); 
+    return if(!m;$anyword;);
+    return if($keyword{$_});
+#    debug("$me{headi}:$_:$me{taili}");
     $me{lookahead} = 1;
 }
 sub flookahead {
@@ -308,6 +320,20 @@ sub flookahead {
     }{
         "$1" && return;
     }sex;
+    freplace();
+}
+sub freplace {
+    debug("freplace:");
+    $_ = substr($me{input},$me{headi},$me{taili} - $me{i});
+#    debug("$me{headi}:$1:$me{taili}");
+    $me{repaced} = substr($me{input},$me{headi},$me{rparenti} - $me{i});
+    $me{replacement} = "stimy_echo($_,$me{repaced})";
+    $me{replaced_len} = length($me{repaced});
+    substr($me{input},$me{headi},$me{replaced_len},$me{replacement});
+    $me{increment} = length($me{replacement}) - $me{replaced_len}; 
+    $me{input_len} += $me{increment};
+    $me{inputi} += $me{increment};
+#    debug("$me{headi}:$2:$me{rparenti}");
 }
 sub openfile {
     open($log, '>', "$me{logfile}") or die "Cann't open file: $me{logfile}. $!";

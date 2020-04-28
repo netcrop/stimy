@@ -1,9 +1,9 @@
-#define A(X) (X)
+#define abc(X) (X)
 int definition()
 {
-    if
-    ( /* 1 */ A // 2
-    /* 3 */   (0) /* 4 */
-         == (1));
+    ife
+    ( /* 1 */ abc // 2
+    /* 3 */   (100000) /* 4 */
+         == d(100));
     return 1;
 }
