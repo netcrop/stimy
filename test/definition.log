@@ -17,20 +17,32 @@ flparent:
 size:2
 frparent:
 flookbehind:)
+foneline:
+60:abc:62
 size:1
 fslash: start comment 1.
 fslash: end comment 1.
 fnl:
 flookahead:=
+freplace:
+60:abc:62
 flparent:
 size:2
 frparent:
 flookbehind:)
+foneline:
+128:d:128
 size:1
 frparent:
 flookahead:)
+freplace:
+128:d:128
 flookbehind:)
+foneline:
+42:ife:44
 size:0
 flookahead:;
+freplace:
+42:ife:44
 frbrace:
 =====================

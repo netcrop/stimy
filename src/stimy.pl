@@ -3,7 +3,7 @@ use PERLVERSION;
 use strict;
 use warnings;
 no warnings 'uninitialized';
-use Data::Dumper;
+#use Data::Dumper;
 my $sharp = '#';
 my $asterisk = '\*';
 my $slash = '/';
@@ -23,8 +23,6 @@ my $space = ' ';
 my $semicol = ';';
 my $nl = "\n";
 my $indent = $space x 4;
-my $insertbegin = $lbrace . $nl . $indent . 'stimy_pre();';
-my $insertend = $nl . $indent . 'stimy_post();' . $nl . $rbrace;
 my $ignoreword ='(?:__typeof__)';
 my $assignmentop = '(?:=|\+=|\-=|\*=|/=|\%=|\<\<=|\>\>=|\&=|\^=|\|=)';
 my $alpha = '[0-9a-zA-Z_\-]';
@@ -93,6 +91,7 @@ my %keyword = (
     volatile => 'volatile',
 );
 my %me = (
+    replacedi => 0,
     rparenti => 0,
     headi => 0,
     taili => 0,
@@ -112,6 +111,8 @@ my %me = (
     unicodesize => 256,
     num_brace => 0,
     preinput => "#ifndef STIMY_H\n#include <stimy.h>\n#endif\n",
+    insertbegin => "${lbrace}${nl}${indent}stimy_pre()${semicol}",
+    insertend => "${nl}${indent}stimy_post()${semicol}${nl}${rbrace}",
 );
 sub debug{
     say $log "$_[0]";
@@ -238,18 +239,34 @@ sub fdoublequote {
     $me{dquote} = 1;
 }
 sub flbrace {
-    # Counting brace is noly valid inside function definition.
+    # Counting brace is only valid inside function definition.
     return if($me{squote} || $me{dquote} || $me{comment}
          || $me{preprocessor} || !$me{fundef});
     debug("flbrace:");
     return if(++$me{num_brace} > 1);
-    $me{lbrace} = 1; 
+    $me{lbracei} = $me{inputi};
 }
 sub frbrace {
     return if($me{squote} || $me{dquote} || $me{comment}
-         || $me{preprocessor} || !$me{lbrace});
+         || $me{preprocessor} || !$me{lbracei});
     debug("frbrace:");
     return if(--$me{num_brace} >0);
+    fheadtail();
+}
+sub fheadtail()
+{
+    debug("fheadtail:");
+    debug("$me{lbracei}::$me{inputi}");
+    $me{replacedi} = $me{lbracei}; 
+    $me{replaced} = $lbrace;
+    $me{replacement} = $me{insertbegin};
+    freplace();
+    $me{replacedi} = $me{inputi}; 
+    $me{replaced} = $rbrace;
+    $me{replacement} = $me{insertend};
+    freplace();
+    $me{fundef} = 0;
+    $me{lbracei} = 0;
 }
 sub flparent {
     return if($me{squote} || $me{dquote} || $me{comment} || $me{preprocessor});
@@ -320,16 +337,17 @@ sub flookahead {
     }{
         "$1" && return;
     }sex;
+    $_ = substr($me{input},$me{headi},$me{taili} - $me{i});
+    debug("$me{headi}:$_:$me{taili}");
+    $me{replacedi} = $me{headi};
+    $me{replaced} = substr($me{input},$me{headi},$me{rparenti} - $me{i});
+    $me{replacement} = "stimy_echo($_,$me{replaced})";
     freplace();
 }
 sub freplace {
     debug("freplace:");
-    $_ = substr($me{input},$me{headi},$me{taili} - $me{i});
-    debug("$me{headi}:$_:$me{taili}");
-    $me{repaced} = substr($me{input},$me{headi},$me{rparenti} - $me{i});
-    $me{replacement} = "stimy_echo($_,$me{repaced})";
-    $me{replaced_len} = length($me{repaced});
-    substr($me{input},$me{headi},$me{replaced_len},$me{replacement});
+    $me{replaced_len} = length($me{replaced});
+    substr($me{input},$me{replacedi},$me{replaced_len},$me{replacement});
     $me{increment} = length($me{replacement}) - $me{replaced_len}; 
     $me{input_len} += $me{increment};
     $me{inputi} += $me{increment};
@@ -367,7 +385,7 @@ sub run {
 sub postrun()
 {
     debug("=====================");
-    print "$me{input}";
+    print "$me{preinput}$me{input}";
     close $log;
 }
 openfile();
