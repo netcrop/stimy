@@ -301,9 +301,9 @@ sub foneline {
         $me{taili} = $me{i};
     }
     $_ = substr($me{input},$me{headi},$me{taili} - $me{i}); 
-    return if(!m;$anyword;);
+    debug("$me{headi}:$_:$me{taili}");
+    return if(!m;^$anyword$;);
     return if($keyword{$_});
-#    debug("$me{headi}:$_:$me{taili}");
     $me{lookahead} = 1;
 }
 sub flookahead {
