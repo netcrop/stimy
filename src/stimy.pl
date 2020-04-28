@@ -325,7 +325,7 @@ sub flookahead {
 sub freplace {
     debug("freplace:");
     $_ = substr($me{input},$me{headi},$me{taili} - $me{i});
-#    debug("$me{headi}:$1:$me{taili}");
+    debug("$me{headi}:$_:$me{taili}");
     $me{repaced} = substr($me{input},$me{headi},$me{rparenti} - $me{i});
     $me{replacement} = "stimy_echo($_,$me{repaced})";
     $me{replaced_len} = length($me{repaced});
