@@ -57,6 +57,13 @@ class Stimy:
                 exit(1)
             return None
 
+    def usage(self,option=1):
+        if option in self.message:
+            print(self.message[option].replace("@","\n    "))
+        else:
+            for key in self.message:
+                print(key,self.message[key].replace("@","\n    "))
+        exit(1)
     def debug(self,info='',outfile='',emit=''):
         if not self.debugging: return
         emit = sys._getframe(1).f_code.co_name + ':' \
