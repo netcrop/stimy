@@ -15,14 +15,15 @@ class Stimy:
         self.homedir = os.environ.get('HOME') + '/'
         self.tmpdir = '/var/tmp/'
         self.debugging = DEBUGGING
+        self.content = ''
 
     def comments(self):
         self.debug()
         if self.argc < 3: self.usage(self.args[1])
         if self.argc >= 2: sourcefile = self.args[2]
         with open(sourcefile,'r') as fh:
-            content = fh.read()
-        print(content)
+            self.content = fh.read()
+        print(self.content)
 
     def test(self):
         with tempfile.NamedTemporaryFile(mode='w+',
