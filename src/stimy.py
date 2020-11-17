@@ -4,17 +4,23 @@ import os,socket,getpass,random,datetime
 class Stimy:
     def __init__(self,*argv):
         self.message = {'-h':' print this help message.',
-        '-t': ' test'}
+        '-t': ' test','-c': ' [source file]'}
         self.argv = argv
         self.args = argv[0]
         self.argc = len(self.args)
         if self.argc == 1: self.usage()
-        self.option = { '-h':self.usage ,'-t':self.test}
+        self.option = { '-h':self.usage ,'-t':self.test,'-c':self.comments }
         self.uid = os.getuid()
         self.username = getpass.getuser()
         self.homedir = os.environ.get('HOME') + '/'
         self.tmpdir = '/var/tmp/'
         self.debugging = DEBUGGING
+
+    def comments(self):
+        self.debug()
+        if self.argc < 3: self.usage(self.args[1])
+        if self.argc >= 2: sourcefile = self.args[2]
+        print(sourcefile)
 
     def test(self):
         with tempfile.NamedTemporaryFile(mode='w+',
