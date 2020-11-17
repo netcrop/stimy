@@ -22,7 +22,7 @@ class Stimy:
             self.testfh.write('big')
         proc = self.run(cmd='cat',stdout=subprocess.PIPE,infile=self.testfh.name)
         if proc != None:print(proc.stdout)
-        proc = self.run(stdout=subprocess.PIPE,infile='/etc/hostname')
+        proc = self.run(cmd='cat',stdout=subprocess.PIPE,infile='/etc/hostname')
         if proc != None:print(proc.stdout)
         self.run(cmd='date -u')
 
