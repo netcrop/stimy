@@ -4,7 +4,7 @@ import os,socket,getpass,random,datetime
 class Stimy:
     def __init__(self,*argv):
         self.message = {'-h':' print this help message.',
-        '-t': 'test'}
+        '-t': ' test'}
         self.argv = argv
         self.args = argv[0]
         self.argc = len(self.args)
