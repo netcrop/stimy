@@ -22,7 +22,47 @@ class Stimy:
         if self.argc < 3: self.usage(self.args[1])
         if self.argc >= 2: sourcefile = self.args[2]
         with open(sourcefile,'r') as fh:
-            self.content = fh.read()
+            content = fh.read()
+        pattern = r"""
+                            ##  --------- COMMENT ---------
+           /\*              ##  Start of /* ... */ comment
+           [^*]*\*+         ##  Non-* followed by 1-or-more *'s
+           (                ##
+             [^/*][^*]*\*+  ##
+           )*               ##  0-or-more things which don't start with /
+                            ##    but do end with '*'
+           /                ##  End of /* ... */ comment
+         |                  ##  -OR-  various things which aren't comments:
+           (                ## 
+                            ##  ------ " ... " STRING ------
+             "              ##  Start of " ... " string
+             (              ##
+               \\.          ##  Escaped char
+             |              ##  -OR-
+               [^"\\]       ##  Non "\ characters
+             )*             ##
+             "              ##  End of " ... " string
+           |                ##  -OR-
+                            ##
+                            ##  ------ ' ... ' STRING ------
+             '              ##  Start of ' ... ' string
+             (              ##
+               \\.          ##  Escaped char
+             |              ##  -OR-
+               [^'\\]       ##  Non '\ characters
+             )*             ##
+             '              ##  End of ' ... ' string
+           |                ##  -OR-
+                            ##
+                            ##  ------ ANYTHING ELSE -------
+             .              ##  Anything other char
+             [^/"'\\]*      ##  Chars which doesn't start a comment, string
+           )                ##    or escape
+        """
+        regex = re.compile(pattern,re.VERBOSE|re.MULTILINE|re.DOTALL)
+        for m in regex.finditer(content):
+            if not m.group(2):continue
+            self.content += m.group(2)
         print(self.content)
 
     def test(self):

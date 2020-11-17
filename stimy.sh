@@ -80,7 +80,7 @@ stimy.target()
         \builtin cd \$targetdir &&\
         for i in \$($find -regextype sed -regex ".*\.[c,h]$"|\
             $egrep -v 'stimy.h|stimy.c|config.h|config.def.h');do
-            $stimy \$i > \$i~
+            $stimy -c \$i > \$i~
             $mv -f \$i~ \$i 
         done
     )
@@ -106,8 +106,8 @@ stimy.test()
 {
     local testfile=\${1:?[test header file]}
     [[ -r \${testfile} ]] || return
-    stimy.debug
-    $stimy \${testfile} >>$logfile 
+    stimy.install
+    $stimy -c \${testfile} >>$logfile 
     $less $logfile
 }
 stimy.difflog()
@@ -120,7 +120,7 @@ stimy.difflog()
     )
     local i
     for i in \${Tests[@]};do
-        $stimy \${i} >/dev/null
+        $stimy -c \${i} >/dev/null
         $diff -c /tmp/stimy.log \${i/.h/.log}
     done
 }
