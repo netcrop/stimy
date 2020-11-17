@@ -20,7 +20,9 @@ class Stimy:
         self.debug()
         if self.argc < 3: self.usage(self.args[1])
         if self.argc >= 2: sourcefile = self.args[2]
-        print(sourcefile)
+        with open(sourcefile,'r') as fh:
+            content = fh.read()
+        print(content)
 
     def test(self):
         with tempfile.NamedTemporaryFile(mode='w+',
