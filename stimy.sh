@@ -44,6 +44,64 @@ stimy.substitute()
     logfile=/tmp/stimy.log
     \builtin source <($cat<<-EOF
 
+stimy.restore.target()
+{
+    local offset sourcedir targetdir=\${1:?[target original source dir~.]}
+    targetdir=\$($realpath \${targetdir})
+    offset=\$((\${#targetdir}-1))
+    [[ "\${targetdir:\$offset:1}" == '~' ]] || targetdir="\${targetdir}~" 
+    [[ -d \${targetdir} ]] || {
+        \builtin echo "invalid directory: \${targetdir}"
+        return 1
+    }
+#    set -x
+    sourcedir=\${targetdir:0:\$offset}
+    [[ -d \${sourcedir} ]] || {
+       \builtin echo "invalid directory: \${sourcedir}"
+        return 1
+    }
+    $rm -rf \${sourcedir}
+    $mv \${targetdir} \${sourcedir}
+    set +x
+}
+stimy.target()
+{
+    local offset configfile targetdir=\${1:?[target source dir]}
+    targetdir=\$($realpath \${targetdir})
+    offset=\$((\${#targetdir}-1))
+    [[ "\${targetdir:\$offset:1}" == '~' ]] && targetdir="\${targetdir:0:\$offset}" 
+    [[ -d \${targetdir} ]] || {
+        \builtin echo "invalid directory: \${targetdir}"
+        return 1
+    }
+    (
+        $mv \$targetdir \$targetdir~
+        $cp -a \$targetdir~ \$targetdir
+        \builtin cd \$targetdir &&\
+        for i in \$($find -regextype sed -regex ".*\.[c,h]$"|\
+            $egrep -v 'stimy.h|stimy.c|config.h|config.def.h');do
+            $stimy \$i > \$i~
+            $mv -f \$i~ \$i 
+        done
+    )
+    configfile="\$(find \${targetdir} -regextype sed -regex ".*/Makefile.am$")" 
+    if [[ -w \${configfile} ]];then
+        \builtin printf "%s" "LDADD=${libdir}/libstimy.so" >> \${configfile} 
+        return
+    fi
+    configfile="\$(find \${targetdir} -regextype sed -regex ".*/config.mk$")" 
+    if [[ -w \${configfile} ]];then
+       $sed -i "s;^\([[:alnum:]]*LDFLAGS.*\)\$;\1 ${libdir}/libstimy.so;" \${configfile}
+        return
+    fi
+    configfile="\$(find \${targetdir} -regextype sed -regex ".*/Makefile$")" 
+    if [[ -w \${configfile} ]];then
+        $sed -i \
+       "s;^\([[:alnum:]]*LDFLAGS *[\+]\{0,1\}=\)\(.*\)\$;\1 ${libdir}/libstimy.so \2;" \
+        \${configfile}
+        return
+    fi
+}
 stimy.test()
 {
     local testfile=\${1:?[test header file]}
@@ -193,54 +251,8 @@ stimy.parser()
     $stimy "\$tmpfile"
     stimy_delocate
 }
-stimy.restore.target()
-{
-    local length sourcedir targetdir=\${1:?[target original source dir~.]}
-    targetdir=\$($realpath \${targetdir})
-    length=\${#targetdir}
-    [[ "\${targetdir:\$length:1}" == '~' ]] || targetdir="\${targetdir}~" 
-    [[ -d \${targetdir} ]] || return
-    set -o xtrace
-    sourcedir=\${targetdir%%~*}
-    [[ -d \${sourcedir} ]] && $rm -rf \${sourcedir}
-    $mv \${targetdir} \${sourcedir}
-    set +o xtrace
-}
-stimy.target()
-{
-    local configfile targetdir=\${1:?[target source dir]}
-    targetdir=\$($realpath \${targetdir})
-    length=\${#targetdir}
-    [[ "\${targetdir:\$length:1}" == '~' ]] && targetdir="\${targetdir%%~*}" 
-    [[ -d \${targetdir} ]] || return
-    (
-        $mv \$targetdir \$targetdir~
-        $cp -a \$targetdir~ \$targetdir
-        \builtin cd \$targetdir &&\
-        for i in \$($find -regextype sed -regex ".*\.[c,h]$"|\
-            $egrep -v 'stimy.h|stimy.c|config.h|config.def.h');do
-            $stimy \$i > \$i~
-            $mv -f \$i~ \$i 
-        done
-    )
-    configfile="\$(find \${targetdir} -regextype sed -regex ".*/Makefile.am$")" 
-    if [[ -w \${configfile} ]];then
-        \builtin printf "%s" "LDADD=${libdir}/libstimy.so" >> \${configfile} 
-        return
-    fi
-    configfile="\$(find \${targetdir} -regextype sed -regex ".*/config.mk$")" 
-    if [[ -w \${configfile} ]];then
-       $sed -i "s;^\([[:alnum:]]*LDFLAGS.*\)\$;\1 ${libdir}/libstimy.so;" \${configfile}
-        return
-    fi
-    configfile="\$(find \${targetdir} -regextype sed -regex ".*/Makefile$")" 
-    if [[ -w \${configfile} ]];then
-        $sed -i \
-       "s;^\([[:alnum:]]*LDFLAGS *[\+]\{0,1\}=\)\(.*\)\$;\1 ${libdir}/libstimy.so \2;" \
-        \${configfile}
-        return
-    fi
-}
+
+
 stimy.preprocessor()
 {
     local infile=\${1:?[C/h file]}

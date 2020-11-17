@@ -91,6 +91,7 @@ my %keyword = (
     volatile => 'volatile',
 );
 my %me = (
+    typedef => 0,
     replacedi => 0,
     rparenti => 0,
     headi => 0,
@@ -238,17 +239,43 @@ sub fdoublequote {
     return $me{dquote} = 0 if($me{dquote});
     $me{dquote} = 1;
 }
+sub fundef {
+    debug("fundef:");
+    if($pcomment[1] > $me{inputi}){
+        $me{i} = $me{inputi} - 1;
+    }else{
+        $me{i} = $pcomment[1] + 1;
+        $_ = substr($me{input},$me{i},$me{inputi} - $me{i});
+        if(m;$nonsp;){
+            $me{i} = $me{inputi} - 1;
+        }else{
+            $me{i} = $pcomment[0] - 1;
+        }
+    }
+    for (;$me{i} > 0; $me{i}--){
+        $_ = substr($me{input},$me{i},1);
+        next if(m;$sp;);
+        return $me{fundef} = 1 if(m;[$rparent];);
+        return $me{fundef} = 0;
+    }
+    return $me{fundef} = 0;
+}
 sub flbrace {
     # Counting brace is only valid inside function definition.
     return if($me{squote} || $me{dquote} || $me{comment}
-         || $me{preprocessor} || !$me{fundef});
+         || $me{preprocessor});
     debug("flbrace:");
+    if(!fundef()){
+        debug("$me{fundef}");
+        return; 
+    }
+    debug("$me{fundef}");
     return if(++$me{num_brace} > 1);
     $me{lbracei} = $me{inputi};
 }
 sub frbrace {
     return if($me{squote} || $me{dquote} || $me{comment}
-         || $me{preprocessor} || !$me{lbracei});
+         || $me{preprocessor} || !$me{fundef});
     debug("frbrace:");
     return if(--$me{num_brace} >0);
     fheadtail();
@@ -269,46 +296,49 @@ sub fheadtail()
     $me{lbracei} = 0;
 }
 sub flparent {
-    return if($me{squote} || $me{dquote} || $me{comment} || $me{preprocessor});
+    return if($me{squote} || $me{dquote} || $me{comment}
+         || $me{preprocessor} || !$me{fundef});
     debug("flparent:");
     return if($me{num_brace} < 1);
     push(@pparent,$me{inputi});
     debug("size:" . scalar(@pparent));
 }
 sub frparent {
-    return if($me{squote} || $me{dquote} || $me{comment} || $me{preprocessor});
+    return if($me{squote} || $me{dquote} || $me{comment}
+         || $me{preprocessor} || !$me{fundef});
     debug("frparent:");
     # Possible function definition.
-    return $me{fundef} = 1 if($me{num_brace} < 1);
+    return if( $me{num_brace} < 1);
     flookahead() if($me{lookahead});
     $me{rparenti} = $me{inputi};
-    flookbehind();
+    fname();
     pop(@pparent);
     debug("size:" . scalar(@pparent));
 }
-sub flookbehind {
+sub fname {
     $_ = substr($me{input},$me{inputi},1);
-    debug("flookbehind:$_");
+    debug("fname:$_");
     if($pcomment[1] > $pparent[-1]){
         $me{i} = $pparent[-1] - 1;
-        foneline();
+        filter();
         return;
     }
     $me{i} = $pcomment[1] + 1;
     $_ = substr($me{input},$me{i},$pparent[-1] - $me{i});
+    debug("$_");
     if(m;$nonsp;){
         $me{i} = $pparent[-1] - 1; 
     }else{
         $me{i} = $pcomment[0] - 1; 
     }
-    foneline();
+    filter();
 }
-sub foneline {
-    debug("foneline:");
+sub filter {
+    debug("filter:");
     $me{pattern} = $sp;
     for (;$me{i} > 0;$me{i}--){
         $_ = substr($me{input},$me{i},1);
-        #debug(":$_:");
+        debug(":$_:");
         next if(m;$me{pattern};);
         if(m;$sp;){
             $me{headi} = $me{i} + 1;
@@ -319,9 +349,15 @@ sub foneline {
     }
     $_ = substr($me{input},$me{headi},$me{taili} - $me{i}); 
     debug("$me{headi}:$_:$me{taili}");
-    return if(!m;^$anyword$;);
-    return if($keyword{$_});
-    $me{lookahead} = 1;
+    s{
+        ^${wordsep}*(${anyword})$
+    }{
+        $me{name}="$1" || return;
+        return if($keyword{$1});
+        $me{headi} += $-[1]; 
+        $me{lookahead} = 1;
+    }sex;
+    debug(":$me{name}:");
 }
 sub flookahead {
     $_ = substr($me{input},$me{inputi},1);
