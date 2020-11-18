@@ -1,10 +1,13 @@
+
 /* begin
  */ # define TESTCOMMENT /* testing 
 comments */ \
         testcomment /* more */ \
  (){ } 
 int
-comments()
+comments() 
+
+
 {
     /*/
     /* 
@@ -20,6 +23,7 @@ continue comment 2.
 int
 comments2 /* comment 5 */()
 {
-    /* comment 4 */
+    /* comment
+     4 */
     return 0;
 }

@@ -9,20 +9,76 @@ class Stimy:
         self.args = argv[0]
         self.argc = len(self.args)
         if self.argc == 1: self.usage()
-        self.option = { '-h':self.usage ,'-t':self.test,'-c':self.comments }
+        self.option = { '-h':self.usage ,'-t':self.test,'-c':self.default }
         self.uid = os.getuid()
         self.username = getpass.getuser()
         self.homedir = os.environ.get('HOME') + '/'
         self.tmpdir = '/var/tmp/'
         self.debugging = DEBUGGING
         self.content = ''
+        self.tablesize = 256
+        self.table = {}
+        self.contenti = -1
+        self.pattern = {}        
+        self.match = ''
+
+    def default(self):
+        if self.argc < 3: self.usage(self.args[1])
+        if self.argc >= 2: self.sourcefile = self.args[2]
+        # Build decision table for each content char. 
+        for i in range(self.tablesize):
+            self.table[i] = self.fnothing
+        self.table[ord(' ')] = self.fspace 
+        self.table[ord('\t')] = self.ftab 
+        self.table[ord('\n')] = self.fnl 
+        self.table[ord('#')] = self.fsharp 
+        self.table[ord('/')] = self.fbackslash 
+        self.table[ord('\\')] = self.fslash 
+        self.table[ord('\'')] = self.fsinglequote 
+        self.table[ord('\"')] = self.fdoublequote
+        self.table[ord('(')] = self.flparent 
+        self.table[ord(')')] = self.frparent
+        self.table[ord('{')] = self.flbrace 
+        self.table[ord('}')] = self.frbrace
+        self.comments()
+
+    def fnothing(self):
+        return
+    def fspace(self):
+        return
+    def ftab(self):
+        return
+    def fbackslash(self):
+        return
+    def fnl(self):
+        return
+    def fsharp(self):
+        return
+    def fslash(self):
+        return
+    def fsinglequote(self):
+        return
+    def fdoublequote(self):
+        return
+    def fundef(self):
+        return
+    def flbrace(self):
+        return
+    def frbrace(self):
+        return
+    def flparent(self):
+        return
+    def frparent(self):
+        return
+
+    def ftable(number,fname):
+        self.table[number] = fname
 
     def comments(self):
-        self.debug()
-        if self.argc < 3: self.usage(self.args[1])
-        if self.argc >= 2: sourcefile = self.args[2]
-        with open(sourcefile,'r') as fh:
+        with open(self.sourcefile,'r') as fh:
             content = fh.read()
+        ## Remove multiline to one line.
+        content = re.sub(r'\\\n','',content)
         pattern = r"""
                             ##  --------- COMMENT ---------
            /\*              ##  Start of /* ... */ comment
@@ -32,6 +88,8 @@ class Stimy:
            )*               ##  0-or-more things which don't start with /
                             ##    but do end with '*'
            /                ##  End of /* ... */ comment
+         |
+            //[^\n\r]*      ##  // ... comment
          |                  ##  -OR-  various things which aren't comments:
            (                ## 
                             ##  ------ " ... " STRING ------
@@ -53,7 +111,6 @@ class Stimy:
              )*             ##
              '              ##  End of ' ... ' string
            |                ##  -OR-
-                            ##
                             ##  ------ ANYTHING ELSE -------
              .              ##  Anything other char
              [^/"'\\]*      ##  Chars which doesn't start a comment, string
@@ -63,7 +120,12 @@ class Stimy:
         for m in regex.finditer(content):
             if not m.group(2):continue
             self.content += m.group(2)
+        self.content = re.sub(r'\s+\n','\n',self.content)
+        self.content = re.sub(r'^\s*\n\s*','',self.content)
         print(self.content)
+
+    def space(char):
+        return ord(char)
 
     def test(self):
         with tempfile.NamedTemporaryFile(mode='w+',
