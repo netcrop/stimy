@@ -107,21 +107,25 @@ stimy.test()
     local testfile=\${1:?[test header file]}
     [[ -r \${testfile} ]] || return
     stimy.install
+    \builtin echo "---------" >$logfile
+    $cat \${testfile} >>$logfile
+    \builtin echo "=========" >>$logfile
     $stimy -c \${testfile} >>$logfile 
+    \builtin echo "---------" >>$logfile
     $less $logfile
 }
 stimy.difflog()
 {
     declare -a Tests=(
-    ${testdir}/misc.h
-    ${testdir}/quote.h
+#    ${testdir}/misc.h
+#    ${testdir}/quote.h
     ${testdir}/comments.h
-    ${testdir}/definition.h
+#    ${testdir}/definition.h
     )
     local i
     for i in \${Tests[@]};do
-        $stimy -c \${i} >/dev/null
-        $diff -c /tmp/stimy.log \${i/.h/.log}
+        $stimy -c \${i} >/tmp/stimy.log
+        $cat \${i} >>/tmp/stimy.log
     done
 }
 stimy.funcall()

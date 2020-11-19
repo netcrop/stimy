@@ -22,6 +22,58 @@ class Stimy:
         self.pattern = {}        
         self.match = ''
 
+
+    def comments(self):
+        with open(self.sourcefile,'r') as fh:
+            content = fh.read()
+        ## Remove multiline to one line.
+        content = re.sub(r"\\\n",'',content)
+        pattern = r"""
+          //[^\n\r]*     ##  // ... comment on the same line
+         |
+                            ##  --------- COMMENT ---------
+           /\*              ##  Start of /* ... */ comment
+           [^*]*\*+         ##  Non-* followed by 1-or-more *'s
+           (?:              ##
+             [^/*][^*]*\*+  ##
+           )*               ##  0-or-more things which don't start with /
+                            ##    but do end with '*'
+           /                ##  End of /* ... */ comment
+         |                  ##  -OR-  various things which aren't comments:
+           (                ##  Group 1 start
+                            ##  ------ " ... " STRING ------
+             "              ##  Start of " ... " string
+             (?:            ##
+               \\.          ##  Escaped char
+             |              ##  -OR-
+               [^"\\]       ##  Non "\ characters
+             )*             ##
+             "              ##  End of " ... " string
+           |                ##  -OR-
+                            ##
+                            ##  ------ ' ... ' STRING ------
+             '              ##  Start of ' ... ' string
+             (?:            ##
+               \\.          ##  Escaped char
+             |              ##  -OR-
+               [^'\\]       ##  Non '\ characters
+             )*             ##
+             '              ##  End of ' ... ' string
+           |                ##  -OR-
+                            ##  ------ ANYTHING ELSE -------
+             .              ##  Anything other char
+             [^/"'\\]*      ##  Chars which doesn't start a comment, string or escape
+           )                ##  Group 1 end  
+        """
+        regex = re.compile(pattern,re.VERBOSE|re.MULTILINE|re.DOTALL)
+        for m in regex.finditer(content):
+            if m.group(1):self.content += m.group(1)
+        self.content = re.sub(r'\s*\n','\n',self.content)
+        self.content = re.sub(r'^\s*\n\s*','',self.content,1)
+        self.content = re.sub(r'\s*\n\s*$','',self.content,1)
+
+        print(self.content)
+
     def default(self):
         if self.argc < 3: self.usage(self.args[1])
         if self.argc >= 2: self.sourcefile = self.args[2]
@@ -73,56 +125,6 @@ class Stimy:
 
     def ftable(number,fname):
         self.table[number] = fname
-
-    def comments(self):
-        with open(self.sourcefile,'r') as fh:
-            content = fh.read()
-        ## Remove multiline to one line.
-        content = re.sub(r'\\\n','',content)
-        pattern = r"""
-                            ##  --------- COMMENT ---------
-           /\*              ##  Start of /* ... */ comment
-           [^*]*\*+         ##  Non-* followed by 1-or-more *'s
-           (                ##
-             [^/*][^*]*\*+  ##
-           )*               ##  0-or-more things which don't start with /
-                            ##    but do end with '*'
-           /                ##  End of /* ... */ comment
-         |
-            //[^\n\r]*      ##  // ... comment
-         |                  ##  -OR-  various things which aren't comments:
-           (                ## 
-                            ##  ------ " ... " STRING ------
-             "              ##  Start of " ... " string
-             (              ##
-               \\.          ##  Escaped char
-             |              ##  -OR-
-               [^"\\]       ##  Non "\ characters
-             )*             ##
-             "              ##  End of " ... " string
-           |                ##  -OR-
-                            ##
-                            ##  ------ ' ... ' STRING ------
-             '              ##  Start of ' ... ' string
-             (              ##
-               \\.          ##  Escaped char
-             |              ##  -OR-
-               [^'\\]       ##  Non '\ characters
-             )*             ##
-             '              ##  End of ' ... ' string
-           |                ##  -OR-
-                            ##  ------ ANYTHING ELSE -------
-             .              ##  Anything other char
-             [^/"'\\]*      ##  Chars which doesn't start a comment, string
-           )                ##    or escape
-        """
-        regex = re.compile(pattern,re.VERBOSE|re.MULTILINE|re.DOTALL)
-        for m in regex.finditer(content):
-            if not m.group(2):continue
-            self.content += m.group(2)
-        self.content = re.sub(r'\s+\n','\n',self.content)
-        self.content = re.sub(r'^\s*\n\s*','',self.content)
-        print(self.content)
 
     def space(char):
         return ord(char)
