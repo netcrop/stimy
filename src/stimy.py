@@ -19,9 +19,30 @@ class Stimy:
         self.tablesize = 256
         self.table = {}
         self.contenti = -1
+        self.content_len = 0
         self.pattern = {}        
-        self.match = ''
-
+        self.dquote = 0
+        self.squote = 0
+        self.preprocessor = 0
+        self.backslash = 0
+        self.log = '/tmp/stimy.log'
+        self.fh = ''
+        self.num_brace = 0
+        self.fdef = 0
+        self.idprocess = False
+        self.idstarti = 0
+        self.idendi = 0
+        self.keyword = {}
+        self.indent = '    '
+        self.semicol = ';'
+        self.lower = 'abcdefghijklmnopqrstuvwxyz'
+        self.upper = 'abcdefghijklmnopqrstuvwxyz'.upper()
+        self.digits = '0123456789'
+        self.underscore = '_'
+        self.identifier = list(self.lower + self.upper + self.digits + self.underscore)
+        self.nl ='\n'
+        self.insertbegin = self.nl + self.indent + 'stimy_pre()' + self.semicol 
+        self.insertend = self.indent + 'stimy_post()' + self.semicol + self.nl  
 
     def comments(self):
         with open(self.sourcefile,'r') as fh:
@@ -71,28 +92,184 @@ class Stimy:
         self.content = re.sub(r'\s*\n','\n',self.content)
         self.content = re.sub(r'^\s*\n\s*','',self.content,1)
         self.content = re.sub(r'\s*\n\s*$','',self.content,1)
+        self.content = list(self.content)
+        self.content_len = len(self.content)
 
-        print(self.content)
 
     def default(self):
         if self.argc < 3: self.usage(self.args[1])
         if self.argc >= 2: self.sourcefile = self.args[2]
+        self.fh = open(self.log,'a')
         # Build decision table for each content char. 
-        for i in range(self.tablesize):
-            self.table[i] = self.fnothing
+        for i in self.identifier:
+            self.table[ord(i)] = self.fidentifier
         self.table[ord(' ')] = self.fspace 
         self.table[ord('\t')] = self.ftab 
         self.table[ord('\n')] = self.fnl 
         self.table[ord('#')] = self.fsharp 
-        self.table[ord('/')] = self.fbackslash 
-        self.table[ord('\\')] = self.fslash 
+        self.table[ord('/')] = self.fslash 
+        self.table[ord('\\')] = self.fbackslash 
         self.table[ord('\'')] = self.fsinglequote 
         self.table[ord('\"')] = self.fdoublequote
         self.table[ord('(')] = self.flparent 
         self.table[ord(')')] = self.frparent
         self.table[ord('{')] = self.flbrace 
         self.table[ord('}')] = self.frbrace
+        for i in range(self.tablesize):
+            if i not in self.table: self.table[i] = self.fnothing
         self.comments()
+        while self.contenti < self.content_len: 
+            self.table[ord(self.content[self.contenti])]()
+            self.contenti += 1
+        print('=======================')
+        print(''.join(self.content))
+
+    # First condition to handle 
+    def fsinglequote(self):
+        if self.dquote or self.preprocessor:return
+        if self.backslash: 
+            self.backslash = 0
+            return
+        if self.squote:
+            print('fsinglequote:end',file=self.fh)
+            self.squote = 0
+            return
+        print('fsinglequote:start',file=self.fh)
+        self.squote = 1
+
+    def fdoublequote(self):
+        if self.squote or self.preprocessor:return
+        if self.backslash: 
+            self.backslash = 0
+            return
+        if self.dquote:
+           print('fdoublequote:end',file=self.fh)
+           self.dquote = 0  
+           return
+        print('fdoublequote:start',file=self.fh)
+        self.dquote = 1
+
+    def fsharp(self):
+        if self.dquote or self.squote or self.preprocessor:return
+        print('fsharp:start preprocessor',file=self.fh)
+        self.preprocessor = 1
+
+    def fnl(self):
+        if self.dquote or self.squote:return
+        if self.preprocessor:
+            print('fnl:end preprocessor',file=self.fh)
+            self.preprocessor = 0
+            return
+        print('fnl:',file=self.fh)
+
+    def fbackslash(self):
+        if self.backslash: 
+            print('fbackslash:end',file=self.fh)
+            self.backslash = 0
+            return
+        # Next char
+        match = re.search('[\'\"]',self.content[self.contenti+1])
+        if match:
+            print('fbackslash:start',file=self.fh)
+            self.backslash = 1
+
+    def flbrace(self):
+        if self.dquote or self.squote or self.preprocessor:return
+        # Increment Brace only inside function def
+        if self.fdef:
+            print('flbrace:start',file=self.fh)
+            self.num_brace += 1
+            return
+        # Decremental check
+        for i in range(self.contenti-1,0,-1): 
+            match = re.search('\s',self.content[i])
+            if match:continue
+            if self.content[i].find(')') < 0:return
+            break
+        # Found function def
+        print('flbrace:fdef start',file=self.fh)
+        self.fdef = 1
+        # Insert Begin
+        leng = len(self.insertbegin) 
+        for i in range(0,leng):
+            self.content.insert(self.contenti+1+i,self.insertbegin[i:i+1])
+        self.content_len += leng
+        self.contenti += leng
+
+    def frbrace(self):
+        # Increment Brace only inside function def
+        if self.dquote or self.squote or self.preprocessor or not self.fdef:return
+        if self.num_brace > 0:
+            print('frbrace:end',file=self.fh)
+            self.num_brace -= 1
+            return
+        print('frbrace:fdef end',file=self.fh)
+        self.fdef = 0
+        leng = len(self.insertend) 
+        for i in range(0,leng):
+            self.content.insert(self.contenti+i,self.insertend[i:i+1])
+        self.content_len += leng
+        self.contenti += leng
+
+
+    def fidentifier(self):
+        if self.dquote or self.squote or self.preprocessor or not self.fdef:return
+        # Lookforward one char
+        match = re.search('[a-zA-Z_0-9]',self.content[self.contenti + 1])
+        if match:
+            if self.idprocess:return
+            self.idstarti = self.contenti
+            self.idprocess = True
+            return
+        if self.idprocess:
+            self.idprocess = False
+            # Multi char Identifier
+            if self.content[self.idstarti].isdigit():return
+            self.idendi = self.contenti + 1
+            identifier = ''.join(self.content[self.idstarti:self.idendi])
+            if identifier.find('return') >= 0:self.freturn()
+            print(identifier,file=self.fh)
+            return
+        # One char Identifier
+        if self.content[self.contenti].isdigit():return
+        self.idstarti = self.contenti
+        self.idendi = self.contenti + 1
+        print(''.join(self.content[self.idstarti:self.idendi]),file=self.fh)
+
+    # Insert
+    def freturn(self):
+        insertpre = 'stimy_post('
+        insertpost = ');'
+
+        for i in range(self.idendi,self.content_len):
+            if self.content[i].find(';') < 0:continue
+            insertposti = i + 1
+            break
+        # Order for insert or pop matters
+        leng = len(insertpost)
+        for i in range(0,leng):
+            self.content.insert(insertposti+i,insertpost[i:i+1])
+        self.content_len += leng
+        self.contenti += leng
+
+        leng = len('return')
+        for i in range(0,leng):
+            self.content.pop(self.idstarti)    
+        self.contenti -= leng
+        self.content_len -= leng 
+
+        leng = len(insertpre)
+        for i in range(0,leng):
+            self.content.insert(self.idstarti+i,insertpre[i:i+1])
+        self.content_len += leng
+        self.contenti += leng
+
+
+    def flparent(self):
+        return
+    def frparent(self):
+        return
+
 
     def fnothing(self):
         return
@@ -100,23 +277,9 @@ class Stimy:
         return
     def ftab(self):
         return
-    def fbackslash(self):
-        return
-    def fnl(self):
-        return
-    def fsharp(self):
-        return
     def fslash(self):
         return
-    def fsinglequote(self):
-        return
-    def fdoublequote(self):
-        return
     def fundef(self):
-        return
-    def flbrace(self):
-        return
-    def frbrace(self):
         return
     def flparent(self):
         return
@@ -125,9 +288,6 @@ class Stimy:
 
     def ftable(number,fname):
         self.table[number] = fname
-
-    def space(char):
-        return ord(char)
 
     def test(self):
         with tempfile.NamedTemporaryFile(mode='w+',
