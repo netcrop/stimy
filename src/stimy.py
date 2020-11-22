@@ -9,7 +9,7 @@ class Stimy:
         self.args = argv[0]
         self.argc = len(self.args)
         if self.argc == 1: self.usage()
-        self.option = { '-h':self.usage ,'-t':self.test,'-c':self.default }
+        self.option = { '-h':self.usage ,'-t':self.test,'-c':self.fdefault }
         self.uid = os.getuid()
         self.username = getpass.getuser()
         self.homedir = os.environ.get('HOME') + '/'
@@ -31,13 +31,13 @@ class Stimy:
         self.idprocess = False
         self.idstarti = 0
         self.idendi = 0
+        self.whitespace = {' ':1,'\t':1,'\n':1,'\r':1,'\f':1,'\v':1}
         self.indent = '    '
         self.semicol = ';'
         self.lower = 'abcdefghijklmnopqrstuvwxyz'
         self.upper = 'abcdefghijklmnopqrstuvwxyz'.upper()
         self.digits = '0123456789'
         self.underscore = '_'
-        self.identifier = list(self.lower + self.upper + self.digits + self.underscore)
         self.nl ='\n'
         self.insert = {}
         self.insertstr = {}
@@ -45,8 +45,12 @@ class Stimy:
         self.insertstr[1] = self.indent + 'stimy_post()' + self.semicol + self.nl  
         self.insertstr[2] = 'stimy_post('
         self.insertstr[3] = ');'
-        self.parent = ()
-
+        self.insertstr[4] = ' stimy_echo('
+        self.insertstr[5] = '#ifndef STIMY_H\n#include <stimy.h>\n#endif\n' 
+        self.insertstr[6] = ')'
+        self.parent = []
+        self.identifier = { 'a':1,'b':1,'c':1,'d':1,'e':1,'f':1,'g':1,'h':1,'i':1,'j':1,'k':1,'l':1,'m':1,'n':1,'o':1,'p':1,'q':1,'r':1,'s':1,'t':1,'u':1,'v':1,'w':1,'x':1,'y':1,'z':1,'A':1,'B':1,'C':1,'D':1,'E':1,'F':1,'G':1,'H':1,'I':1,'J':1,'K':1,'L':1,'M':1,'N':1,'O':1,'P':1,'Q':1,'R':1,'S':1,'T':1,'U':1,'V':1,'W':1,'X':1,'Y':1,'Z':1,'0':1,'1':1,'2':1,'3':1,'4':1,'5':1,'6':1,'7':1,'8':1,'9':1,'_':1}
+        self.keyword = { 'error':1,'pragma':1,'operator':1,'elif':1,'line':1,'endif':1,'ifdef':1,'include':1,'undef':1,'defined':1,'auto':1,'char':1,'default':1,'else':1,'for':1,'inline':1,'return':1,'static':1,'union':1,'while':1,'_Bool':1,'_Complex':1,'restrict':1,'enum':1,'goto':1,'int':1,'short':1,'struct':1,'unsigned':1,'break':1,'const':1,'do':1,'extern':1,'if':1,'long':1,'signed':1,'switch':1,'void':1,'case':1,'continue':1,'double':1,'float':1,'_Imaginary':1,'register':1,'sizeof':1,'typeof':1,'typedef':1,'volatile':1}
     def comments(self):
         with open(self.sourcefile,'r') as fh:
             content = fh.read()
@@ -98,14 +102,13 @@ class Stimy:
         self.content = list(self.content)
         self.content_len = len(self.content)
 
-
-    def default(self):
+    def fdefault(self):
         if self.argc < 3: self.usage(self.args[1])
         if self.argc >= 2: self.sourcefile = self.args[2]
         self.fh = open(self.log,'a')
         # Build decision table for each content char. 
-        for c in self.identifier:
-            self.table[ord(c)] = self.fidentifier
+        for i in self.identifier:
+            self.table[ord(i)] = self.fidentifier
         self.table[ord(' ')] = self.fspace 
         self.table[ord('\t')] = self.ftab 
         self.table[ord('\n')] = self.fnl 
@@ -125,29 +128,20 @@ class Stimy:
             self.table[ord(self.content[self.contenti])]()
             self.contenti += 1
         self.finsert()
-        print('=======================')
-        print(''.join(self.content))
+        self.flog('=======================')
+        print(self.insertstr[5] + ''.join(self.content))
 
-    def finsert(self):
-        insertlen = 0
-        offset = 0
-        for key,value in self.insert.items():
-            insertlen = len(self.insertstr[value])
-            for i in range(insertlen):
-                self.content.insert(key+offset+i,self.insertstr[value][i:i+1])
-            offset += insertlen
-
-    # First condition to handle 
+       # First condition to handle 
     def fsinglequote(self):
         if self.dquote or self.preprocessor:return
         if self.backslash: 
             self.backslash = 0
             return
         if self.squote:
-            print('fsinglequote:end',file=self.fh)
+            self.flog('fsinglequote:end')
             self.squote = 0
             return
-        print('fsinglequote:start',file=self.fh)
+        self.flog('fsinglequote:start')
         self.squote = 1
 
     def fdoublequote(self):
@@ -156,70 +150,67 @@ class Stimy:
             self.backslash = 0
             return
         if self.dquote:
-           print('fdoublequote:end',file=self.fh)
+           self.flog('fdoublequote:end')
            self.dquote = 0  
            return
-        print('fdoublequote:start',file=self.fh)
+        self.flog('fdoublequote:start')
         self.dquote = 1
 
     def fsharp(self):
         if self.dquote or self.squote or self.preprocessor:return
-        print('fsharp:start preprocessor',file=self.fh)
+        self.flog('fsharp:start preprocessor')
         self.preprocessor = 1
 
     def fnl(self):
         if self.dquote or self.squote:return
         if self.preprocessor:
-            print('fnl:end preprocessor',file=self.fh)
+            self.flog('fnl:end preprocessor')
             self.preprocessor = 0
             return
-        print('fnl:',file=self.fh)
+        self.flog('fnl:')
 
     def fbackslash(self):
         if self.backslash: 
-            print('fbackslash:end',file=self.fh)
+            self.flog('fbackslash:end')
             self.backslash = 0
             return
         # Next char
-        match = re.search('[\'\"]',self.content[self.contenti+1])
-        if match:
-            print('fbackslash:start',file=self.fh)
-            self.backslash = 1
+        if '\'\"'.find(self.content[self.contenti+1]) < 0:return
+        self.flog('fbackslash:start')
+        self.backslash = 1
 
     def flbrace(self):
         if self.dquote or self.squote or self.preprocessor:return
         # Increment Brace only inside function def
         if self.fdef:
-            print('flbrace:start',file=self.fh)
+            self.flog('flbrace:start')
             self.num_brace += 1
             return
         # Decremental check
         for i in range(self.contenti-1,0,-1): 
-            match = re.search('\s',self.content[i])
-            if match:continue
+            if self.content[i] in self.whitespace:continue
             if self.content[i].find(')') < 0:return
             break
         # Found function def
-        print('flbrace:fdef start',file=self.fh)
+        self.flog('flbrace:fdef start')
         self.fdef = 1
-        self.insert[self.contenti+1] = 0
+        self.insert[self.contenti+1] = [0]
 
     def frbrace(self):
         # Increment Brace only inside function def
         if self.dquote or self.squote or self.preprocessor or not self.fdef:return
         if self.num_brace > 0:
-            print('frbrace:end',file=self.fh)
+            self.flog('frbrace:end')
             self.num_brace -= 1
             return
-        print('frbrace:fdef end',file=self.fh)
+        self.flog('frbrace:fdef end')
         self.fdef = 0
-        self.insert[self.contenti] = 1
+        self.insert[self.contenti] = [1]
 
     def fidentifier(self):
         if self.dquote or self.squote or self.preprocessor or not self.fdef:return
         # Lookforward one char
-        match = re.search('[a-zA-Z_0-9]',self.content[self.contenti + 1])
-        if match:
+        if self.content[self.contenti + 1] in self.identifier:
             if self.idprocess:return
             self.idstarti = self.contenti
             self.idprocess = True
@@ -231,13 +222,13 @@ class Stimy:
             self.idendi = self.contenti + 1
             identifier = ''.join(self.content[self.idstarti:self.idendi])
             if identifier.find('return') >= 0:self.freturn()
-            print(identifier,file=self.fh)
+            self.flog(identifier)
             return
         # One Char Identifier
         if self.content[self.contenti].isdigit():return
         self.idstarti = self.contenti
         self.idendi = self.contenti + 1
-        print(''.join(self.content[self.idstarti:self.idendi]),file=self.fh)
+        self.flog(''.join(self.content[self.idstarti:self.idendi]))
 
     # Insert
     def freturn(self):
@@ -245,20 +236,54 @@ class Stimy:
             if self.content[i].find(';') < 0:continue
             insertposti = i + 1
             break
-        self.insert[self.idstarti] = 2
-        self.insert[insertposti] = 3
+        self.insert[self.idstarti] = [2]
+        self.insert[insertposti] = [3]
  
     def flparent(self):
         if self.dquote or self.squote or self.preprocessor or not self.fdef:return
-        print('flparent:start',file=self.fh)
-        # Function def
-        if self.num_brace < 1: return
+        self.flog('flparent:start')
         self.parent.append(self.contenti)
 
     def frparent(self):
         if self.dquote or self.squote or self.preprocessor or not self.fdef:return
-        print('frparent:end',file=self.fh)
-        return
+        self.flog('frparent:end1')
+        lparenti = self.parent.pop()
+        self.idprocess = False
+        for i in range(lparenti-1,0,-1):
+            if self.content[i] in self.whitespace:
+                if not self.idprocess:continue
+                self.idstarti = i
+                self.idprocess = False
+                break
+            if self.content[i] not in self.identifier:return 
+            if self.idprocess:continue
+            self.idendi = i + 1
+            self.idprocess = True
+
+        word = ''.join(self.content[self.idstarti:self.idendi]).strip()
+        if word in self.keyword:return
+        # Insert Stimy_echo(X,Y) argument X
+        self.insert[self.idstarti] = [4, word + ',']
+        self.insert[self.contenti] = [6]
+        self.flog('frparent:end2 ' + self.insertstr[4])
+
+    def finsert(self):
+        insertlen = 0
+        offset = 0
+        for key,value in self.insert.items():
+            insertlen = len(self.insertstr[value[0]])
+            for i in range(insertlen):
+                self.content.insert(key+offset+i,self.insertstr[value[0]][i:i+1])
+            offset += insertlen
+            if len(value) < 2:continue
+            # Insert Stimy_echo(X,Y) argument X
+            insertlen = len(value[1])
+            for i in range(insertlen):
+                self.content.insert(key+offset+i,value[1][i:i+1])
+            offset += insertlen
+
+    def flog(self,info=''):
+        if self.debugging:print(info,file=self.fh)
 
     def fnothing(self):
         return
@@ -273,7 +298,7 @@ class Stimy:
 
     def ftable(number,fname):
         self.table[number] = fname
-
+        
     def test(self):
         with tempfile.NamedTemporaryFile(mode='w+',
         dir=self.tmpdir,delete=False) as self.testfh:
@@ -314,7 +339,7 @@ class Stimy:
                 self.debug(info='end 4',emit=emit)
                 exit(1)
             return None
-
+    
     def usage(self,option=1):
         if option in self.message:
             print(self.message[option].replace("@","\n    "))

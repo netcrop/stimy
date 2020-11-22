@@ -106,7 +106,7 @@ stimy.test()
 {
     local testfile=\${1:?[test header file]}
     [[ -r \${testfile} ]] || return
-    stimy.install
+    stimy.install 1
     \builtin echo "---------" >$logfile
     $cat \${testfile} >>$logfile
     \builtin echo "=========" >>$logfile
