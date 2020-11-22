@@ -20,7 +20,6 @@ class Stimy:
         self.table = {}
         self.contenti = -1
         self.content_len = 0
-        self.pattern = {}        
         self.dquote = 0
         self.squote = 0
         self.preprocessor = 0
@@ -32,7 +31,6 @@ class Stimy:
         self.idprocess = False
         self.idstarti = 0
         self.idendi = 0
-        self.keyword = {}
         self.indent = '    '
         self.semicol = ';'
         self.lower = 'abcdefghijklmnopqrstuvwxyz'
@@ -41,8 +39,13 @@ class Stimy:
         self.underscore = '_'
         self.identifier = list(self.lower + self.upper + self.digits + self.underscore)
         self.nl ='\n'
-        self.insertbegin = self.nl + self.indent + 'stimy_pre()' + self.semicol 
-        self.insertend = self.indent + 'stimy_post()' + self.semicol + self.nl  
+        self.insert = {}
+        self.insertstr = {}
+        self.insertstr[0] = self.nl + self.indent + 'stimy_pre()' + self.semicol 
+        self.insertstr[1] = self.indent + 'stimy_post()' + self.semicol + self.nl  
+        self.insertstr[2] = 'stimy_post('
+        self.insertstr[3] = ');'
+        self.parent = ()
 
     def comments(self):
         with open(self.sourcefile,'r') as fh:
@@ -101,8 +104,8 @@ class Stimy:
         if self.argc >= 2: self.sourcefile = self.args[2]
         self.fh = open(self.log,'a')
         # Build decision table for each content char. 
-        for i in self.identifier:
-            self.table[ord(i)] = self.fidentifier
+        for c in self.identifier:
+            self.table[ord(c)] = self.fidentifier
         self.table[ord(' ')] = self.fspace 
         self.table[ord('\t')] = self.ftab 
         self.table[ord('\n')] = self.fnl 
@@ -121,8 +124,18 @@ class Stimy:
         while self.contenti < self.content_len: 
             self.table[ord(self.content[self.contenti])]()
             self.contenti += 1
+        self.finsert()
         print('=======================')
         print(''.join(self.content))
+
+    def finsert(self):
+        insertlen = 0
+        offset = 0
+        for key,value in self.insert.items():
+            insertlen = len(self.insertstr[value])
+            for i in range(insertlen):
+                self.content.insert(key+offset+i,self.insertstr[value][i:i+1])
+            offset += insertlen
 
     # First condition to handle 
     def fsinglequote(self):
@@ -189,12 +202,7 @@ class Stimy:
         # Found function def
         print('flbrace:fdef start',file=self.fh)
         self.fdef = 1
-        # Insert Begin
-        leng = len(self.insertbegin) 
-        for i in range(0,leng):
-            self.content.insert(self.contenti+1+i,self.insertbegin[i:i+1])
-        self.content_len += leng
-        self.contenti += leng
+        self.insert[self.contenti+1] = 0
 
     def frbrace(self):
         # Increment Brace only inside function def
@@ -205,12 +213,7 @@ class Stimy:
             return
         print('frbrace:fdef end',file=self.fh)
         self.fdef = 0
-        leng = len(self.insertend) 
-        for i in range(0,leng):
-            self.content.insert(self.contenti+i,self.insertend[i:i+1])
-        self.content_len += leng
-        self.contenti += leng
-
+        self.insert[self.contenti] = 1
 
     def fidentifier(self):
         if self.dquote or self.squote or self.preprocessor or not self.fdef:return
@@ -230,7 +233,7 @@ class Stimy:
             if identifier.find('return') >= 0:self.freturn()
             print(identifier,file=self.fh)
             return
-        # One char Identifier
+        # One Char Identifier
         if self.content[self.contenti].isdigit():return
         self.idstarti = self.contenti
         self.idendi = self.contenti + 1
@@ -238,38 +241,24 @@ class Stimy:
 
     # Insert
     def freturn(self):
-        insertpre = 'stimy_post('
-        insertpost = ');'
-
         for i in range(self.idendi,self.content_len):
             if self.content[i].find(';') < 0:continue
             insertposti = i + 1
             break
-        # Order for insert or pop matters
-        leng = len(insertpost)
-        for i in range(0,leng):
-            self.content.insert(insertposti+i,insertpost[i:i+1])
-        self.content_len += leng
-        self.contenti += leng
-
-        leng = len('return')
-        for i in range(0,leng):
-            self.content.pop(self.idstarti)    
-        self.contenti -= leng
-        self.content_len -= leng 
-
-        leng = len(insertpre)
-        for i in range(0,leng):
-            self.content.insert(self.idstarti+i,insertpre[i:i+1])
-        self.content_len += leng
-        self.contenti += leng
-
-
+        self.insert[self.idstarti] = 2
+        self.insert[insertposti] = 3
+ 
     def flparent(self):
-        return
-    def frparent(self):
-        return
+        if self.dquote or self.squote or self.preprocessor or not self.fdef:return
+        print('flparent:start',file=self.fh)
+        # Function def
+        if self.num_brace < 1: return
+        self.parent.append(self.contenti)
 
+    def frparent(self):
+        if self.dquote or self.squote or self.preprocessor or not self.fdef:return
+        print('frparent:end',file=self.fh)
+        return
 
     def fnothing(self):
         return
@@ -280,10 +269,6 @@ class Stimy:
     def fslash(self):
         return
     def fundef(self):
-        return
-    def flparent(self):
-        return
-    def frparent(self):
         return
 
     def ftable(number,fname):

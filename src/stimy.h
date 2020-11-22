@@ -32,7 +32,7 @@ do{\
     }\
 } while(0)
 #define stimy_pre() stimy_emit(0);
-#define stimy_post(X) do { stimy_emit(1); return X; } while(0)
+#define stimy_post(X) do { stimy_emit(1); X } while(0)
 enum
 { EXIST = 0, STIMYINSTANS = 9, FILENAMESIZE = 16, SPACEPADD =
     4, SPACESIZE = 80
