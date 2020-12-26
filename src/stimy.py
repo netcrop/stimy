@@ -39,23 +39,13 @@ class Stimy:
         self.digits = '0123456789'
         self.underscore = '_'
         self.nl ='\n'
-        self.insert = {}
-        self.insertstr = {}
-        self.insertstr[0] = self.nl + self.indent + 'stimy_pre()' + self.semicol 
-        self.insertstr[1] = self.indent + 'stimy_post()' + self.semicol + self.nl  
-        self.insertstr[2] = 'stimy_post('
-        self.insertstr[3] = ');'
-        self.insertstr[4] = ' stimy_echo('
-        self.insertstr[5] = '#ifndef STIMY_H\n#include <stimy.h>\n#endif\n' 
-        self.insertstr[6] = ')'
         self.parent = []
         self.identifier = { 'a':1,'b':1,'c':1,'d':1,'e':1,'f':1,'g':1,'h':1,'i':1,'j':1,'k':1,'l':1,'m':1,'n':1,'o':1,'p':1,'q':1,'r':1,'s':1,'t':1,'u':1,'v':1,'w':1,'x':1,'y':1,'z':1,'A':1,'B':1,'C':1,'D':1,'E':1,'F':1,'G':1,'H':1,'I':1,'J':1,'K':1,'L':1,'M':1,'N':1,'O':1,'P':1,'Q':1,'R':1,'S':1,'T':1,'U':1,'V':1,'W':1,'X':1,'Y':1,'Z':1,'0':1,'1':1,'2':1,'3':1,'4':1,'5':1,'6':1,'7':1,'8':1,'9':1,'_':1}
         self.keyword = { 'error':1,'pragma':1,'operator':1,'elif':1,'line':1,'endif':1,'ifdef':1,'include':1,'undef':1,'defined':1,'auto':1,'char':1,'default':1,'else':1,'for':1,'inline':1,'return':1,'static':1,'union':1,'while':1,'_Bool':1,'_Complex':1,'restrict':1,'enum':1,'goto':1,'int':1,'short':1,'struct':1,'unsigned':1,'break':1,'const':1,'do':1,'extern':1,'if':1,'long':1,'signed':1,'switch':1,'void':1,'case':1,'continue':1,'double':1,'float':1,'_Imaginary':1,'register':1,'sizeof':1,'typeof':1,'typedef':1,'volatile':1}
+
     def comments(self):
-        with open(self.sourcefile,'r') as fh:
-            content = fh.read()
-        ## Remove multiline to one line.
-        content = re.sub(r"\\\n",'',content)
+       ## Remove multiline to one line.
+        self.content = re.sub(r"\\\n",'',self.content)
         pattern = r"""
           //[^\n\r]*     ##  // ... comment on the same line
          |
@@ -94,18 +84,20 @@ class Stimy:
            )                ##  Group 1 end  
         """
         regex = re.compile(pattern,re.VERBOSE|re.MULTILINE|re.DOTALL)
-        for m in regex.finditer(content):
-            if m.group(1):self.content += m.group(1)
-        self.content = re.sub(r'\s*\n','\n',self.content)
+        content = ''
+        for m in regex.finditer(self.content):
+            if m.group(1):content += m.group(1)
+        self.content = re.sub(r'\s*\n','\n',content)
         self.content = re.sub(r'^\s*\n\s*','',self.content,1)
         self.content = re.sub(r'\s*\n\s*$','',self.content,1)
-        self.content = list(self.content)
-        self.content_len = len(self.content)
 
     def fdefault(self):
         if self.argc < 3: self.usage(self.args[1])
         if self.argc >= 2: self.sourcefile = self.args[2]
         self.fh = open(self.log,'a')
+        with open(self.sourcefile,'r') as fh:
+            self.content = fh.read()
+        self.comments()
         # Build decision table for each content char. 
         for i in self.identifier:
             self.table[ord(i)] = self.fidentifier
@@ -123,13 +115,13 @@ class Stimy:
         self.table[ord('}')] = self.frbrace
         for i in range(self.tablesize):
             if i not in self.table: self.table[i] = self.fnothing
-        self.comments()
+        self.content = list(self.content)
+        self.content_len = len(self.content)
         while self.contenti < self.content_len: 
-            self.table[ord(self.content[self.contenti])]()
+            self.table[ord(self.content[self.contenti][0])]()
             self.contenti += 1
-        self.finsert()
         self.flog('=======================')
-        print(self.insertstr[5] + ''.join(self.content))
+        print('#ifndef STIMY_H\n#include <stimy.h>\n#endif\n' + ''.join(self.content))
 
        # First condition to handle 
     def fsinglequote(self):
@@ -174,7 +166,7 @@ class Stimy:
             self.flog('fbackslash:end')
             self.backslash = 0
             return
-        # Next char
+        # Look forward one char
         if '\'\"'.find(self.content[self.contenti+1]) < 0:return
         self.flog('fbackslash:start')
         self.backslash = 1
@@ -186,7 +178,7 @@ class Stimy:
             self.flog('flbrace:start')
             self.num_brace += 1
             return
-        # Decremental check
+        # Lookbehind untill
         for i in range(self.contenti-1,0,-1): 
             if self.content[i] in self.whitespace:continue
             if self.content[i].find(')') < 0:return
@@ -194,7 +186,7 @@ class Stimy:
         # Found function def
         self.flog('flbrace:fdef start')
         self.fdef = 1
-        self.insert[self.contenti+1] = [0]
+        self.content[self.contenti] += self.nl + self.indent + 'stimy_pre()' + self.semicol 
 
     def frbrace(self):
         # Increment Brace only inside function def
@@ -205,40 +197,35 @@ class Stimy:
             return
         self.flog('frbrace:fdef end')
         self.fdef = 0
-        self.insert[self.contenti] = [1]
+        self.content[self.contenti-1]+=self.indent + 'stimy_post()' + self.semicol + self.nl 
 
     def fidentifier(self):
         if self.dquote or self.squote or self.preprocessor or not self.fdef:return
         # Lookforward one char
-        if self.content[self.contenti + 1] in self.identifier:
+        if self.content[self.contenti + 1][0] in self.identifier:
             if self.idprocess:return
+            # First but not the only char in Identifier
             self.idstarti = self.contenti
             self.idprocess = True
             return
-        if self.idprocess:
-            self.idprocess = False
-            # Multi char Identifier
-            if self.content[self.idstarti].isdigit():return
-            self.idendi = self.contenti + 1
-            identifier = ''.join(self.content[self.idstarti:self.idendi])
-            if identifier.find('return') >= 0:self.freturn()
-            self.flog(identifier)
-            return
-        # One Char Identifier
-        if self.content[self.contenti].isdigit():return
-        self.idstarti = self.contenti
-        self.idendi = self.contenti + 1
-        self.flog(''.join(self.content[self.idstarti:self.idendi]))
 
-    # Insert
+        # End of Identifier
+        if not self.idprocess: self.idstarti = self.contenti
+        self.idprocess = False
+        if self.content[self.idstarti].isdigit():return
+        self.idendi = self.contenti + 1
+        identifier = ''.join(self.content[self.idstarti:self.idendi])
+        if identifier.find('return') >= 0:self.freturn()
+        self.flog('fiden:' + identifier)
+
+    # Found Return statements
     def freturn(self):
         for i in range(self.idendi,self.content_len):
             if self.content[i].find(';') < 0:continue
-            insertposti = i + 1
-            break
-        self.insert[self.idstarti] = [2]
-        self.insert[insertposti] = [3]
- 
+            self.content[self.idstarti-1] += 'stimy_post(' 
+            self.content[i] += ');'
+            return
+
     def flparent(self):
         if self.dquote or self.squote or self.preprocessor or not self.fdef:return
         self.flog('flparent:start')
@@ -248,39 +235,29 @@ class Stimy:
         if self.dquote or self.squote or self.preprocessor or not self.fdef:return
         self.flog('frparent:end1')
         lparenti = self.parent.pop()
-        self.idprocess = False
+        idstarti = idendi = 0
+        # Lookbehind find the end of Identidier
         for i in range(lparenti-1,0,-1):
-            if self.content[i] in self.whitespace:
-                if not self.idprocess:continue
-                self.idstarti = i
-                self.idprocess = False
+            if self.content[i][0] in self.whitespace:continue
+            if self.content[i][0] in self.identifier:
+                idendi = i + 1
                 break
-            if self.content[i] not in self.identifier:return 
-            if self.idprocess:continue
-            self.idendi = i + 1
-            self.idprocess = True
+            return
+        # Lookbehind find the start of Identidier
+        for i in range(idendi-1,0,-1):
+            if self.content[i][0] in self.identifier:continue
+            if self.content[i][0] in self.whitespace:
+                idstarti = i + 1
+                break
+            return
 
-        word = ''.join(self.content[self.idstarti:self.idendi]).strip()
+        word = ''.join(self.content[idstarti:idendi]).strip()
+        self.flog('frparent:end2 ' + str(idstarti) + ' ' + str(idendi) + ' ' + word)
         if word in self.keyword:return
+        if word.startswith('_'):return
         # Insert Stimy_echo(X,Y) argument X
-        self.insert[self.idstarti] = [4, word + ',']
-        self.insert[self.contenti] = [6]
-        self.flog('frparent:end2 ' + self.insertstr[4])
-
-    def finsert(self):
-        insertlen = 0
-        offset = 0
-        for key,value in self.insert.items():
-            insertlen = len(self.insertstr[value[0]])
-            for i in range(insertlen):
-                self.content.insert(key+offset+i,self.insertstr[value[0]][i:i+1])
-            offset += insertlen
-            if len(value) < 2:continue
-            # Insert Stimy_echo(X,Y) argument X
-            insertlen = len(value[1])
-            for i in range(insertlen):
-                self.content.insert(key+offset+i,value[1][i:i+1])
-            offset += insertlen
+        self.content[idstarti-1] += ' stimy_echo(' + word + ','
+        self.content[self.contenti] += ')'
 
     def flog(self,info=''):
         if self.debugging:print(info,file=self.fh)

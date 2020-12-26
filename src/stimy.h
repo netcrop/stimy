@@ -51,5 +51,5 @@ void stimy_mlocate (void **, size_t);
 void stimy_delocate (void);
 extern void stimy_alocate (void);
 extern void stimy_checkfile (void);
-stimy_t *pstimy;
+extern stimy_t *pstimy;
 #define stimy (*pstimy)

@@ -1,4 +1,5 @@
 f()
 {
-    a(b(c),d(e), f(g),h,i,j);
+    if(!(data = malloc(size)) || !(node = malloc(sizeof(node_t))))
+        return NULL;
 }

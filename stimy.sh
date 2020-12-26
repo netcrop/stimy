@@ -1,49 +1,49 @@
 stimy.substitute()
 {
-    local reslist devlist libdir includedir bindir cmd i perl_version \
-    vendor_perl testdir \
-    cmdlist='dirname basename cat ls mv sudo cp chmod ln chown rm touch
-    head mkdir perl mktemp shred egrep make sed realpath find less'
-
-    declare -A Devlist=(
-    [dot]='dot'
-    [valgrind]='valgrind'
-    [stimy]='stimy'
-    [nocomments]='nocomments'
-    [gcc]='gcc'
-    [diff]='diff'
-    )
-    cmdlist="${Devlist[@]} $cmdlist"
-    for cmd in $cmdlist;do
-        i="$(\builtin type -fp $cmd 2>/dev/null)"
-        if [[ -z $i ]];then
-            if [[ -z ${Devlist[$cmd]} ]];then
-                reslist+=$cmd
-            else
-                devlist+="$cmd "
-            fi
-        fi
-        \builtin eval "${cmd//-/_}=${i:-:}"
+    local cmdlist reslist devlist pkg pkglist cmd i 
+    cmdlist=(dirname basename cat ls mv sudo cp chmod ln chown rm touch
+    head mkdir perl mktemp shred egrep make sed realpath find less)
+    devlist=(dot valgrind stimy nocomments gcc diff)
+    pkglist=()
+    for cmd in ${cmdlist[@]};do
+        i=($(\builtin type -afp $cmd))
+        [[ -n $i ]] || {
+            \builtin printf "%s\n" "$FUNCNAME Require: $cmd"
+            return
+        }
+        \builtin eval "local ${cmd//-/_}=${i:-:}"
     done
-    [[ -z $reslist ]] ||\
-    { 
-        \builtin printf "%s\n" \
-        "$FUNCNAME says: ( $reslist ) These Required Commands are missing."
+    for pkg in ${pkglist[@]};do
+        pacman -Qi $pkg >/dev/null 2>&1 && continue
+        \builtin printf "%s\n" "$FUNCNAME Require: $pkg"
         return
-    }
-    [[ -z $devlist ]] ||\
-    \builtin printf "%s\n" \
-    "$FUNCNAME says: ( $devlist ) These Optional Commands for further development."
+    done
+    for cmd in ${devlist[@]};do
+        i=($(\builtin type -afp $cmd))
+        [[ -n $i ]] || {
+            \builtin printf "%s\n" "$FUNCNAME Optional: $cmd"
+            continue
+        }
+        \builtin eval "local ${cmd//-/_}=${i:-:}"
+    done
 
-    perl_version="$($perl -e 'print $^V')"
-    vendor_perl=/usr/share/perl5/vendor_perl/
-    libdir=/usr/local/lib
-    includedir=/usr/local/include/
-    bindir=/usr/local/bin/
-    testdir=test/
-    logfile=/tmp/stimy.log
+    local perl_version="$($perl -e 'print $^V')"
+    local vendor_perl=/usr/share/perl5/vendor_perl/
+    local libdir=/usr/local/lib
+    local includedir=/usr/local/include/
+    local bindir=/usr/local/bin/
+    local testdir=test/
+    local logfile=/tmp/stimy.log
     \builtin source <($cat<<-EOF
 
+stimy.distribute()
+{
+    : Distribute lib and header file for testing without gcc
+    $cp -f src/libstimy.so ${libdir}
+    $chmod go=r ${libdir}/libstimy.so
+    $cp -f src/stimy.h ${includedir}
+    $chmod go=r ${includedir}/stimy.h
+}
 stimy.restore.target()
 {
     local offset sourcedir targetdir=\${1:?[target original source dir~.]}
@@ -69,6 +69,7 @@ stimy.target()
     local offset configfile targetdir=\${1:?[target source dir]}
     targetdir=\$($realpath \${targetdir})
     offset=\$((\${#targetdir}-1))
+    stimy.install 0
     [[ "\${targetdir:\$offset:1}" == '~' ]] && targetdir="\${targetdir:0:\$offset}" 
     [[ -d \${targetdir} ]] || {
         \builtin echo "invalid directory: \${targetdir}"
@@ -84,17 +85,17 @@ stimy.target()
             $mv -f \$i~ \$i 
         done
     )
-    configfile="\$(find \${targetdir} -regextype sed -regex ".*/Makefile.am$")" 
+    configfile="\$($find \${targetdir} -regextype sed -regex ".*/Makefile.am$")" 
     if [[ -w \${configfile} ]];then
         \builtin printf "%s" "LDADD=${libdir}/libstimy.so" >> \${configfile} 
         return
     fi
-    configfile="\$(find \${targetdir} -regextype sed -regex ".*/config.mk$")" 
+    configfile="\$($find \${targetdir} -regextype sed -regex ".*/config.mk$")" 
     if [[ -w \${configfile} ]];then
        $sed -i "s;^\([[:alnum:]]*LDFLAGS.*\)\$;\1 ${libdir}/libstimy.so;" \${configfile}
         return
     fi
-    configfile="\$(find \${targetdir} -regextype sed -regex ".*/Makefile$")" 
+    configfile="\$($find \${targetdir} -regextype sed -regex ".*/Makefile$")" 
     if [[ -w \${configfile} ]];then
         $sed -i \
        "s;^\([[:alnum:]]*LDFLAGS *[\+]\{0,1\}=\)\(.*\)\$;\1 ${libdir}/libstimy.so \2;" \
@@ -280,8 +281,7 @@ stimy.lib()
 }
 stimy.install()
 {
-    local debugging=\${1:-0}
-    [[ \$debugging =~ [[:digit:]] ]] || debugging=1
+    local debugging=\${1:?[ debugging: 1 | 0]}
     stimy.uninstall
     stimy.lib
     $cp src/libstimy.so ${libdir}/ &&\
@@ -295,7 +295,7 @@ stimy.install()
 }
 stimy.verify()
 {
-    stimy.install
+    stimy.install 0
     stimy.target test/
     (
         \builtin \cd test/ && $make &&\

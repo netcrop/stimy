@@ -6,6 +6,7 @@
 #ifndef STIMY_H
 #include <stimy.h>
 #endif
+stimy_t *pstimy = NULL;
 void stimy_mlocate(void **p, size_t size)
 {
     if ((*p = malloc(size)))
@@ -17,9 +18,9 @@ void stimy_delocate(void)
 {
     if (!pstimy)
         return;
-if (stimy.pfilestat)
+    if (stimy.pfilestat)
         free(stimy.pfilestat);
-if (stimy.fp)
+    if (stimy.fp)
         fclose(stimy.fp);
     free(pstimy);
     pstimy = NULL;
