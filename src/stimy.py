@@ -34,12 +34,16 @@ class Stimy:
         self.whitespace = {' ':1,'\t':1,'\n':1,'\r':1,'\f':1,'\v':1}
         self.indent = '    '
         self.semicol = ';'
-        self.lower = 'abcdefghijklmnopqrstuvwxyz'
-        self.upper = 'abcdefghijklmnopqrstuvwxyz'.upper()
+        self.lowercase = 'abcdefghijklmnopqrstuvwxyz'
+        self.uppercase = 'abcdefghijklmnopqrstuvwxyz'.upper()
         self.digits = '0123456789'
         self.underscore = '_'
         self.nl ='\n'
         self.parent = []
+        self.fundefindicator = { ')':1, ';':1}
+        self.preprocessorcondition = {'if':1,'ifdef':1,'ifndef':1}
+        self.preprocessorend = {'endif':1}
+        self.preprocessorstart = {'include':1,'define':1,'undef':1,'line':1,'error':1,'pragma':1}
         self.identifier = { 'a':1,'b':1,'c':1,'d':1,'e':1,'f':1,'g':1,'h':1,'i':1,'j':1,'k':1,'l':1,'m':1,'n':1,'o':1,'p':1,'q':1,'r':1,'s':1,'t':1,'u':1,'v':1,'w':1,'x':1,'y':1,'z':1,'A':1,'B':1,'C':1,'D':1,'E':1,'F':1,'G':1,'H':1,'I':1,'J':1,'K':1,'L':1,'M':1,'N':1,'O':1,'P':1,'Q':1,'R':1,'S':1,'T':1,'U':1,'V':1,'W':1,'X':1,'Y':1,'Z':1,'0':1,'1':1,'2':1,'3':1,'4':1,'5':1,'6':1,'7':1,'8':1,'9':1,'_':1}
         self.keyword = { 'error':1,'pragma':1,'operator':1,'elif':1,'line':1,'endif':1,'ifdef':1,'include':1,'undef':1,'defined':1,'auto':1,'char':1,'default':1,'else':1,'for':1,'inline':1,'return':1,'static':1,'union':1,'while':1,'_Bool':1,'_Complex':1,'restrict':1,'enum':1,'goto':1,'int':1,'short':1,'struct':1,'unsigned':1,'break':1,'const':1,'do':1,'extern':1,'if':1,'long':1,'signed':1,'switch':1,'void':1,'case':1,'continue':1,'double':1,'float':1,'_Imaginary':1,'register':1,'sizeof':1,'typeof':1,'typedef':1,'volatile':1}
 
@@ -149,17 +153,42 @@ class Stimy:
         self.dquote = 1
 
     def fsharp(self):
-        if self.dquote or self.squote or self.preprocessor:return
-        self.flog('fsharp:start preprocessor')
-        self.preprocessor = 1
+        if self.dquote or self.squote:return
+        # Lookforward find Preprocessor Keyword start index
+        endi = self.content_len
+        starti = self.contenti+1
+        for i in range(starti,self.content_len):
+            if self.content[i] == ' ':continue 
+            starti = i
+            break
+        if self.content[starti] not in self.identifier:return
+        # Lookforward find Preprocessor Keyword End Index
+        for i in range(starti,self.content_len):
+            if self.content[i] in self.identifier:continue
+            endi = i
+            break
+        # Found Keyword
+        word = ''.join(self.content[starti:endi]) 
+        if not self.preprocessor and word in self.preprocessorstart:
+            self.flog('fsharp:start preprocessor')
+            self.preprocessor = 1
+            return
+        if not self.preprocessor and word in self.preprocessorcondition:
+            self.flog('fsharp:start preprocessor condition')
+            self.preprocessor = 2
+            return
+        if self.preprocessor and word in self.preprocessorend:
+            self.flog('fsharp:end preprocessor')
+            self.preprocessor = 0
+            return
 
     def fnl(self):
         if self.dquote or self.squote:return
-        if self.preprocessor:
+        if self.preprocessor == 1:
             self.flog('fnl:end preprocessor')
             self.preprocessor = 0
             return
-        self.flog('fnl:')
+#        self.flog('fnl:')
 
     def fbackslash(self):
         if self.backslash: 
@@ -178,12 +207,12 @@ class Stimy:
             self.flog('flbrace:start')
             self.num_brace += 1
             return
-        # Lookbehind untill
+        # Lookbehind Untill NonWithSpace Char
         for i in range(self.contenti-1,0,-1): 
             if self.content[i] in self.whitespace:continue
-            if self.content[i].find(')') < 0:return
+            if self.content[i] not in self.fundefindicator:return
             break
-        # Found function def
+        # Found Function Definition
         self.flog('flbrace:fdef start')
         self.fdef = 1
         self.content[self.contenti] += self.nl + self.indent + 'stimy_pre()' + self.semicol 
@@ -234,16 +263,19 @@ class Stimy:
     def frparent(self):
         if self.dquote or self.squote or self.preprocessor or not self.fdef:return
         self.flog('frparent:end1')
+        if len(self.parent) < 1:return
         lparenti = self.parent.pop()
         idstarti = idendi = 0
-        # Lookbehind find the end of Identidier
+        semicolon = ''
+        semicoloni = -1
+        # Lookbehind find the End of Identidier
         for i in range(lparenti-1,0,-1):
             if self.content[i][0] in self.whitespace:continue
             if self.content[i][0] in self.identifier:
                 idendi = i + 1
                 break
             return
-        # Lookbehind find the start of Identidier
+        # Lookbehind find the Start of Identidier
         for i in range(idendi-1,0,-1):
             if self.content[i][0] in self.identifier:continue
             if self.content[i][0] in self.whitespace:
@@ -253,11 +285,30 @@ class Stimy:
 
         word = ''.join(self.content[idstarti:idendi]).strip()
         self.flog('frparent:end2 ' + str(idstarti) + ' ' + str(idendi) + ' ' + word)
+        # Ignore Keywords
         if word in self.keyword:return
+        # Ignore Preprocessor
+        if word.isupper():return
+        # Ignore internal Identifier
         if word.startswith('_'):return
+        # Lookforward for End of Function Execution Indicator SEMICOLON
+        for i in range(self.contenti+1,self.content_len):
+            if self.content[i] in self.whitespace:continue
+            if self.content[i] == ';':
+                semicoloni = i + 1
+            else:
+                semicoloni = self.contenti
+            break
+ 
+        argument = ''.join(self.content[lparenti:self.contenti+1])
+        semicolon = ''.join(self.content[self.contenti+1:semicoloni])
         # Insert Stimy_echo(X,Y) argument X
+        self.content[idstarti-1] += '\n#ifdef ' + word
+        self.content[idstarti-1] += '\n ' + word + argument + semicolon 
+        self.content[idstarti-1] += '\n#else\n' 
         self.content[idstarti-1] += ' stimy_echo(' + word + ','
         self.content[self.contenti] += ')'
+        self.content[semicoloni] += '\n#endif\n'
 
     def flog(self,info=''):
         if self.debugging:print(info,file=self.fh)

@@ -3,7 +3,7 @@ stimy.substitute()
     local cmdlist reslist devlist pkg pkglist cmd i 
     cmdlist=(dirname basename cat ls mv sudo cp chmod ln chown rm touch
     head mkdir perl mktemp shred egrep make sed realpath find less)
-    devlist=(dot valgrind stimy nocomments gcc diff)
+    devlist=(dot valgrind stimy nocomments gcc diff indent)
     pkglist=()
     for cmd in ${cmdlist[@]};do
         i=($(\builtin type -afp $cmd))
@@ -44,6 +44,52 @@ stimy.distribute()
     $cp -f src/stimy.h ${includedir}
     $chmod go=r ${includedir}/stimy.h
 }
+stimy.target()
+{
+    local offset configfile targetdir=\${1:?[target source dir]}
+    [[ \$PWD =~ 'stimy' ]] || {
+        \builtin echo "Should run inside stimy directory."
+        return 1
+    }
+    targetdir=\$($realpath \${targetdir})
+    offset=\$((\${#targetdir}-1))
+    stimy.install 0
+    [[ "\${targetdir:\$offset:1}" == '~' ]] && targetdir="\${targetdir:0:\$offset}" 
+    [[ -d \${targetdir} ]] || {
+        \builtin echo "invalid directory: \${targetdir}"
+        return 1
+    }
+
+    $mv \$targetdir \$targetdir~
+    $cp -a \$targetdir~ \$targetdir
+ 
+    declare -a Target=(\$($find \${targetdir} -regextype sed -regex ".*\.[c,h]$" \
+    ! -path "*/config.h" ! -path "*/config.def.h" ! -path "*/stimy.h" ! -path "*/stimy.c"))
+    for i in \${Target[@]};do
+        [[ -r \${i} ]] || continue
+        $stimy -c \${i} > \${i}~ && $mv -f \${i}~ \${i}
+    done
+    configfile="\$($find \${targetdir} -regextype sed -regex ".*/config.mk$")" 
+    if [[ -w \${configfile} ]];then
+       $sed -i "s;^\([[:alnum:]]*LDFLAGS.*\)\$;\1 ${libdir}/libstimy.so;" \${configfile}
+       return
+    fi
+    declare -a Configfile=(\$($find \${targetdir} -regextype sed -regex ".*/Makefile\.in$")) 
+    for i in \${Configfile[@]};do
+        [[ -w \${i} ]] || continue
+        $sed -i \
+        "s;^\([[:alnum:]]*LDFLAGS *[\+]\{0,1\}=\)\(.*\)\$;\1 ${libdir}/libstimy.so \2;" \
+        \${i}
+#        $sed -E -i "s;^(CFLAGS *=.*)\$;\1 ${libdir}/libstimy.so;" \${i}
+    done
+    declare -a Configfile=(\$($find \${targetdir} -regextype sed -regex ".*/Makefile$")) 
+    for i in \${Configfile[@]};do
+        [[ -w \${i} ]] || continue
+        $sed -i \
+        "s;^\([[:alnum:]]*LDFLAGS *[\+]\{0,1\}=\)\(.*\)\$;\1 ${libdir}/libstimy.so \2;" \
+        \${i}
+    done
+}
 stimy.restore.target()
 {
     local offset sourcedir targetdir=\${1:?[target original source dir~.]}
@@ -63,45 +109,6 @@ stimy.restore.target()
     $rm -rf \${sourcedir}
     $mv \${targetdir} \${sourcedir}
     set +x
-}
-stimy.target()
-{
-    local offset configfile targetdir=\${1:?[target source dir]}
-    targetdir=\$($realpath \${targetdir})
-    offset=\$((\${#targetdir}-1))
-    stimy.install 0
-    [[ "\${targetdir:\$offset:1}" == '~' ]] && targetdir="\${targetdir:0:\$offset}" 
-    [[ -d \${targetdir} ]] || {
-        \builtin echo "invalid directory: \${targetdir}"
-        return 1
-    }
-    (
-        $mv \$targetdir \$targetdir~
-        $cp -a \$targetdir~ \$targetdir
-        \builtin cd \$targetdir &&\
-        for i in \$($find -regextype sed -regex ".*\.[c,h]$"|\
-            $egrep -v 'stimy.h|stimy.c|config.h|config.def.h');do
-            $stimy -c \$i > \$i~
-            $mv -f \$i~ \$i 
-        done
-    )
-    configfile="\$($find \${targetdir} -regextype sed -regex ".*/Makefile.am$")" 
-    if [[ -w \${configfile} ]];then
-        \builtin printf "%s" "LDADD=${libdir}/libstimy.so" >> \${configfile} 
-        return
-    fi
-    configfile="\$($find \${targetdir} -regextype sed -regex ".*/config.mk$")" 
-    if [[ -w \${configfile} ]];then
-       $sed -i "s;^\([[:alnum:]]*LDFLAGS.*\)\$;\1 ${libdir}/libstimy.so;" \${configfile}
-        return
-    fi
-    configfile="\$($find \${targetdir} -regextype sed -regex ".*/Makefile$")" 
-    if [[ -w \${configfile} ]];then
-        $sed -i \
-       "s;^\([[:alnum:]]*LDFLAGS *[\+]\{0,1\}=\)\(.*\)\$;\1 ${libdir}/libstimy.so \2;" \
-        \${configfile}
-        return
-    fi
 }
 stimy.test()
 {
@@ -284,10 +291,12 @@ stimy.install()
     local debugging=\${1:?[ debugging: 1 | 0]}
     stimy.uninstall
     stimy.lib
-    $cp src/libstimy.so ${libdir}/ &&\
-    $chmod u=r,go=r ${libdir}/libstimy.so &&\
-    $cp src/stimy.h ${includedir}/ &&\
+    $cp src/libstimy.so ${libdir}
+    $chmod u=r,go=r ${libdir}/libstimy.so
+    $sudo $ln -sf ${libdir}/libstimy.so /usr/lib/
+    $cp src/stimy.h ${includedir}/
     $chmod u=r,go=r ${includedir}/stimy.h 
+    $sudo $ln -sf ${includedir}/stimy.h /usr/include/
     $sed -e "s;PERLVERSION;$perl_version;" \
     -e "s;DEBUGGING;\$debugging;" \
     src/stimy.py >${bindir}/stimy
@@ -343,6 +352,13 @@ stimy.dot()
     $dot -Tpng \$infile -o /tmp/\$name.png
     $chown \$USER:users /tmp/\$name.png
     $chmod u=rw,go=r /tmp/\$name.png
+}
+stimy.indent()
+{
+    local infile=\${1:?[C file]}
+    $indent --linux-style --indent-level8 --no-tabs \
+    --line-length200 \
+    --standard-output \${infile}
 }
 EOF
 )
