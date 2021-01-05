@@ -157,6 +157,7 @@ class Stimy:
         # Lookforward find Preprocessor Keyword start index
         endi = self.content_len
         starti = self.contenti+1
+        if starti >= self.content_len:return
         for i in range(starti,self.content_len):
             if self.content[i] == ' ':continue 
             starti = i
