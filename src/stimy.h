@@ -13,7 +13,9 @@
 #define stimy_echo(X,Y) \
     (fprintf(stimy.fp,"%8d %4d %s %s\n",\
     stimy.counter++,stimy.index,stimy.space,#X) ? (Y) : (Y))
-
+#define stimy_print(X,Y) \
+    fprintf(stimy.fp,"%8d %4d %s %s\n",\
+    stimy.counter++,stimy.index,stimy.space,#X); Y
 #define stimy_emit(N) \
 do{\
     stimy_alocate();\

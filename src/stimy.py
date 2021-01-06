@@ -245,7 +245,7 @@ class Stimy:
         if self.content[self.idstarti].isdigit():return
         self.idendi = self.contenti + 1
         identifier = ''.join(self.content[self.idstarti:self.idendi])
-        if identifier.find('return') >= 0:self.freturn()
+        if identifier == 'return':self.freturn()
         self.flog('fiden:' + identifier)
 
     # Found Return statements
@@ -292,24 +292,9 @@ class Stimy:
         if word.isupper():return
         # Ignore internal Identifier
         if word.startswith('_'):return
-        # Lookforward for End of Function Execution Indicator SEMICOLON
-        for i in range(self.contenti+1,self.content_len):
-            if self.content[i] in self.whitespace:continue
-            if self.content[i] == ';':
-                semicoloni = i + 1
-            else:
-                semicoloni = self.contenti
-            break
- 
-        argument = ''.join(self.content[lparenti:self.contenti+1])
-        semicolon = ''.join(self.content[self.contenti+1:semicoloni])
-        # Insert Stimy_echo(X,Y) argument X
-        self.content[idstarti-1] += '\n#ifdef ' + word
-        self.content[idstarti-1] += '\n ' + word + argument + semicolon 
-        self.content[idstarti-1] += '\n#else\n' 
+
         self.content[idstarti-1] += ' stimy_echo(' + word + ','
         self.content[self.contenti] += ')'
-        self.content[semicoloni] += '\n#endif\n'
 
     def flog(self,info=''):
         if self.debugging:print(info,file=self.fh)
