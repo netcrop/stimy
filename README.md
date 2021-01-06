@@ -56,8 +56,6 @@ Some of the following commands use sudo for install/uninstall.
 43    8          XSetLineAttributes
 44    8          drw_create 1
 ```
-## Releases
-
 ## Reporting a bug and security issues
 
 github.com/netcrop/stimy/pulls
